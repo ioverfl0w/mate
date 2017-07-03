@@ -1,5 +1,10 @@
 class Event:
 
+    # Event
+    #
+    # Parse incoming packets to be handled by loaded and active Modules.
+    # TODO - implement core modules to be loaded by default here, not run.py
+
     def __init__(self, engine):
         self.engine = engine
         self.log = self.engine.log
@@ -12,12 +17,15 @@ class Event:
             mod.message(client, user, args[2], message)
 
     def notice(self, client, packet, args):
-        pass
+        user = self.getUser(args[0])
+        message = packet[packet[1:].index(' :') + 3:]
+        for mod in self.getMods('NOTICE'):
+            mod.notice(client, user, args[2], message)
 
     def getUser(self, raw):
         try:
             raw = raw[1:]
-            return [raw[:raw.index('!')], who[who.index('!') + 1:who.index('@')],raw[raw.index('@') + 1:]]
+            return [raw[:raw.index('!')], raw[raw.index('!') + 1:raw.index('@')],raw[raw.index('@') + 1:]]
         except:
             return raw
 
