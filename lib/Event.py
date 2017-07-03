@@ -14,13 +14,18 @@ class Event:
         user = self.getUser(args[0])
         message = packet[packet[1:].index(' :') + 3:]
         for mod in self.getMods('PRIVMSG'):
-            mod.message(client, user, args[2], message)
+            mod.message(client, user, args[2] if args[2].startswith('#') else user[0], message)
 
     def notice(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet[1:].index(' :') + 3:]
         for mod in self.getMods('NOTICE'):
-            mod.notice(client, user, args[2], message)
+            mod.notice(client, user, args[2] if args[2].startswith('#') else user[0], message)
+
+    # We are going to join any channel we are invited to
+    def invite(self, client, location):
+        # TODO - better secure from abuse
+        client.join(location)
 
     def getUser(self, raw):
         try:
