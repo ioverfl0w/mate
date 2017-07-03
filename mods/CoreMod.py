@@ -1,3 +1,6 @@
+# Declare our VERSION
+VERSION = 'python-ircbot v0.1b'
+
 class Module:
 
     # This mod is primarily an example module, as well as some typical
@@ -23,8 +26,8 @@ class Module:
 
         # version request
         if args[0] == '\001VERSION\001':
-            return client.notice(user[0], '\001' + 'VERSION python irc' + '\001')
+            return client.notice(user[0], '\001VERSION ' + VERSION + '\001')
 
         # source request
-        if args[0].lower() == '.source':
+        if args[0].lower() == '.source' or args[0].lower() == '.bots':
             return client.msg(channel, 'mate [python] :: Source https://github.com/ioverfl0w/mate/')
