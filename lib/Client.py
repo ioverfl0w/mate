@@ -16,6 +16,9 @@ class Client:
         self.socket = None
         self.status = Status.OFFLINE
 
+        # Hook from Pinger.py timed-function
+        self.pingAttempts = 0
+
     def quit(self):
         try:
             self.send('QUIT')

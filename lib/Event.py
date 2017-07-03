@@ -13,7 +13,7 @@ class Event:
         self.modules = [] # Module storage
 
         # We can ensure some modules are loaded here
-        self.loadMod(mods.CoreMod.Module()) # CoreModule
+        self.loadMod(mods.CoreMod.CoreMod()) # CoreModule
 
     def message(self, client, packet, args):
         user = self.getUser(args[0])
@@ -42,12 +42,12 @@ class Event:
     def getMods(self, type):
         mods = []
         for mod in self.modules:
-            for t in mod.types:
-                if t == type and mod.active:
+            for t in mod.module.types:
+                if t == type and mod.module.active:
                     mods.append(mod)
                     continue
         return mods
 
-    def loadMod(self, module):
-        self.log.write('(event) loading module ' + module.name)
-        self.modules.append(module)
+    def loadMod(self, mod):
+        #self.log.write('(Event) Loading module ' + mod.module.name + ' (' + ('active' if mod.module.active else 'dormant') + ')')
+        self.modules.append(mod)

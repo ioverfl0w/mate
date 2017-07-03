@@ -25,6 +25,7 @@ class TimeKeeper:
 
     # Load our timed-function into the TimeKeeper
     def loadTimeFunc(self, func):
+        #self.engine.log.write('(Timer) Loading timed-function ' + func.schedule.name + ' (' + ('active' if func.schedule.active else 'dormant') + ')')
         self.collection.append(func)
 
 class Schedule:

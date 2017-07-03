@@ -1,4 +1,5 @@
 import lib.Engine
+import mods.Stats
 
 # Engine creation
 engine = lib.Engine.Engine()
@@ -21,6 +22,7 @@ token.umodes = "+p"
 engine.addClient(token)
 
 # Load our modules
+engine.event.loadMod(mods.Stats.Stats())
 
 # Start the Engine
 engine.execute()
