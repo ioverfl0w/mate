@@ -1,4 +1,8 @@
 import lib.Engine
+import mods.CoreMod
+
+# Engine creation
+engine = lib.Engine.Engine()
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)
@@ -14,11 +18,11 @@ token.ajoin = ["#mate"]
 # Client UMODES autoset
 token.umodes = "+p"
 
-# Engine creation
-engine = lib.Engine.Engine()
-
 # Insert our new Client into engine
 engine.addClient(token)
+
+# Load our modules
+engine.event.loadMod(mods.CoreMod.Module())
 
 # Start the Engine
 engine.execute()
