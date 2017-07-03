@@ -2,6 +2,7 @@ import lib.Client
 import lib.Event
 import lib.Logger
 import time
+from lib.Timer import TimeKeeper
 
 class Engine:
 
@@ -17,6 +18,8 @@ class Engine:
         self.log = lib.Logger.Logger()
         # start an Event engine
         self.event = lib.Event.Event(self)
+        # start a Time Keeper
+        self.timer = lib.Timer.TimeKeeper(self)
 
     def addClient(self, profile):
         #add a new client to our queue
@@ -29,7 +32,7 @@ class Engine:
         client.status = lib.Client.Status.OFFLINE
         pass
 
-    def check(self):
+    def cycle(self):
         for e in self.clients:
             # A client that is offline
             if e.status == lib.Client.Status.OFFLINE:
@@ -109,8 +112,13 @@ class Engine:
         # start to handle the clients now
         while True:
             # handle clients now
-            self.check()
-            time.sleep(0.01) # prevent cpu lockup
+            self.cycle()
+
+            # check Timed-Functions
+            self.timer.cycle()
+
+            # prevent cpu lockup
+            time.sleep(0.01)
 
 class Profile:
     # Client profile
