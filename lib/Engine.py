@@ -66,13 +66,20 @@ class Engine:
                 if e.status == lib.Client.Status.ONLINE:
                     if args[1] == 'PRIVMSG':
                         self.event.message(e, packet, args)
+                        continue
                     elif args[1] == 'NOTICE':
                         self.event.notice(e, packet, args)
+                        continue
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
+                        continue
+                    elif args[1] == 'PONG':
+                        # we've been replied to
+                        e.pingAttempts = 0
+                        continue
                     else:
                         self.log.write("(unhandled packet) " + packet)
-                    continue
+                        continue
 
                 # A client still CONNECTING
                 if e.status == lib.Client.Status.CONNECTING:
@@ -109,6 +116,10 @@ class Engine:
             self.log.write('Error: no bots to be connected -- check run.py')
             return
 
+        # Helpful little printout
+        self.log.write('(Event) Loaded ' + str(len(self.event.modules)) + ' modules.')
+        self.log.write('(Timer) Loaded ' + str(len(self.timer.collection)) + ' timed-functions.')
+
         # start to handle the clients now
         while True:
             # handle clients now
@@ -119,6 +130,14 @@ class Engine:
 
             # prevent cpu lockup
             time.sleep(0.01)
+
+class Module:
+    # Module profile
+    # Module name, [types], active
+    def __init__(self, name, types, active=True):
+        self.name = name
+        self.types = types if type(types) is list else [types]
+        self.active = active
 
 class Profile:
     # Client profile
