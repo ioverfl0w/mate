@@ -5,6 +5,11 @@ import traceback
 
 class Client:
 
+    # Client
+    #
+    # This is the backbone to each client, providing an interface for
+    # communications. Connection info is kept here.
+
     def __init__(self, engine, profile):
         self.engine = engine
         self.profile = profile
@@ -36,16 +41,19 @@ class Client:
         # we are now establishing our connection
         self.status = Status.CONNECTING
 
-        # establish who we are with server
-        self.send('NICK ' + self.profile.nick)
-        self.send('USER ' + self.profile.nick[0] + ' * * :' + self.profile.nick)
-
         # send our server password
         if not self.profile.network.password == None:
             self.send('PASS ' + self.profile.network.password)
 
-    def msg(self, target, content):
-        self.send('PRIVMSG ' + target + ' :' + content)
+        # establish who we are with server
+        self.send('NICK ' + self.profile.nick)
+        self.send('USER ' + self.profile.nick[0] + ' * * :' + self.profile.nick)
+
+    def msg(self, target, content, notice=False):
+        self.send(('NOTICE' if notice else 'PRIVMSG') + ' '+ target + ' :' + content)
+
+    def notice(self, target, content):
+        self.msg(target, content, True)
 
     def join(self, channel):
         self.send('JOIN ' + channel)
@@ -53,7 +61,7 @@ class Client:
     def send(self, content):
         try:
             self.sock.send(bytes(content + '\r\n', 'utf-8'))
-            self.engine.log.write('>>> ' + content)
+            # self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
         except Exception:
             if self.sock == None:
                 self.engine.log.write('Attempted to send message to disconnected socket')
@@ -64,7 +72,7 @@ class Client:
 
     def read(self):
         try:
-            return self.sock.recv(4096).decode('utf-8').strip()
+            return self.sock.recv().decode('utf-8').strip()
         except socket.error:
             return ""
 

@@ -5,6 +5,11 @@ import time
 
 class Engine:
 
+    # Engine
+    #
+    # This will ensure all clients are processed and managed. will
+    # attempt to reconnect disconnected bots (TODO add 'halted' option)
+
     def __init__(self):
         # our clients
         self.clients = []
@@ -14,7 +19,7 @@ class Engine:
         self.event = lib.Event.Event(self)
 
     def addClient(self, profile):
-        #add a new bot to our queue
+        #add a new client to our queue
         self.clients.append(lib.Client.Client(self, profile))
 
     def dead(self, client):
