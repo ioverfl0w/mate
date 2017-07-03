@@ -65,6 +65,8 @@ class Engine:
                         self.event.message(e, packet, args)
                     elif args[1] == 'NOTICE':
                         self.event.notice(e, packet, args)
+                    elif args[1] == 'INVITE':
+                        self.event.invite(e, args[3][1:])
                     else:
                         self.log.write("(unhandled packet) " + packet)
                     continue
