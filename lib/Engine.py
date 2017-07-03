@@ -110,7 +110,7 @@ class Engine:
         while True:
             # handle clients now
             self.check()
-            time.sleep(0.02) # prevent cpu lockup
+            time.sleep(0.01) # prevent cpu lockup
 
 class Profile:
     # Client profile
