@@ -1,3 +1,5 @@
+import mods.CoreMod
+
 class Event:
 
     # Event
@@ -9,6 +11,9 @@ class Event:
         self.engine = engine
         self.log = self.engine.log
         self.modules = [] # Module storage
+
+        # We can ensure some modules are loaded here
+        self.loadMod(mods.CoreMod.Module()) # CoreModule
 
     def message(self, client, packet, args):
         user = self.getUser(args[0])
