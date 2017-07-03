@@ -48,7 +48,7 @@ class Client:
         self.send('PRIVMSG ' + target + ' :' + content)
 
     def join(self, channel):
-        self.send('JOIN ')
+        self.send('JOIN ' + channel)
 
     def send(self, content):
         try:

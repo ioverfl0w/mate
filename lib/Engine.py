@@ -1,4 +1,5 @@
 import lib.Client
+import lib.Event
 import lib.Logger
 import time
 
@@ -9,6 +10,8 @@ class Engine:
         self.clients = []
         # start a log
         self.log = lib.Logger.Logger()
+        # start an Event engine
+        self.event = lib.Event.Event(self)
 
     def addClient(self, profile):
         #add a new bot to our queue
@@ -39,7 +42,7 @@ class Engine:
 
             for packet in queue:
                 args = packet.split(" ")
-                self.log.write(str(e) + '\t' + packet) # debug
+                #self.log.write(str(e) + '\t' + packet) # debug
 
                 # check for pong, dont waste time
                 if args[0] == 'PING':
@@ -53,6 +56,12 @@ class Engine:
 
                 # A healthy client, check for module triggers
                 if e.status == lib.Client.Status.ONLINE:
+                    if args[1] == 'PRIVMSG':
+                        self.event.message(e, packet, args)
+                    elif args[1] == 'NOTICE':
+                        self.event.notice(e, packet, args)
+                    else:
+                        self.log.write("(unhandled packet) " + packet)
                     continue
 
                 # A client still CONNECTING
