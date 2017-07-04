@@ -64,7 +64,7 @@ class Client:
     def send(self, content):
         try:
             self.sock.send(bytes(content + '\r\n', 'utf-8'))
-            self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
+            #self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
         except Exception:
             if self.sock == None:
                 self.engine.log.write('Attempted to send message to disconnected socket')
