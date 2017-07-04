@@ -1,6 +1,7 @@
 import shelve
 
 dir = './data/'
+LEVELS = {'OWNER': 3, 'ADMIN': 2, 'TRUSTED': 1, 'USER': 0, 'BLOCKED': -1}
 
 class Access:
 
@@ -12,11 +13,9 @@ class Access:
     # 1 - Trusted/Module
     # 0 - Normal user
     # -1 - Ignored/Blocked
-    def __init__(self):
-        self.levels = {'OWNER': 3, 'ADMIN': 2, 'TRUSTED': 1, 'USER': 0, 'BLOCKED': -1}
 
     def getLevel(self, level):
-        return self.levels[level.upper()]
+        return LEVELS[level.upper()]
 
     # Return the Level of rights for the specified user on the receiving Client
     def userRights(self, client, nick):
