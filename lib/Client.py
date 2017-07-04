@@ -16,6 +16,9 @@ class Client:
         self.socket = None
         self.status = Status.OFFLINE
 
+        # Hook from Pinger.py timed-function
+        self.pingAttempts = 0
+
     def quit(self):
         try:
             self.send('QUIT')
@@ -47,7 +50,7 @@ class Client:
 
         # establish who we are with server
         self.send('NICK ' + self.profile.nick)
-        self.send('USER ' + self.profile.nick[0] + ' * * :' + self.profile.nick)
+        self.send('USER ' + self.profile.nick[0] + ' * * :m8')
 
     def msg(self, target, content, notice=False):
         self.send(('NOTICE' if notice else 'PRIVMSG') + ' '+ target + ' :' + content)
@@ -61,7 +64,7 @@ class Client:
     def send(self, content):
         try:
             self.sock.send(bytes(content + '\r\n', 'utf-8'))
-            # self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
+            #self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
         except Exception:
             if self.sock == None:
                 self.engine.log.write('Attempted to send message to disconnected socket')

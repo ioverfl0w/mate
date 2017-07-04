@@ -1,5 +1,5 @@
 import lib.Engine
-import mods.CoreMod
+import mods.Stats
 
 # Engine creation
 engine = lib.Engine.Engine()
@@ -13,7 +13,7 @@ rizon = lib.Engine.Network('irc.rizon.net', 6697, True)
 token = lib.Engine.Profile('mate', rizon)
 
 # Client autojoin channels
-token.ajoin = ["#papi"]
+token.ajoin = ["#mate"]
 
 # Client UMODES autoset
 token.umodes = "+p"
@@ -22,7 +22,7 @@ token.umodes = "+p"
 engine.addClient(token)
 
 # Load our modules
-engine.event.loadMod(mods.CoreMod.Module())
+engine.event.loadMod(mods.Stats.Stats())
 
 # Start the Engine
 engine.execute()

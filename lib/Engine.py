@@ -2,6 +2,7 @@ import lib.Client
 import lib.Event
 import lib.Logger
 import time
+from lib.Timer import TimeKeeper
 
 class Engine:
 
@@ -17,6 +18,8 @@ class Engine:
         self.log = lib.Logger.Logger()
         # start an Event engine
         self.event = lib.Event.Event(self)
+        # start a Time Keeper
+        self.timer = lib.Timer.TimeKeeper(self)
 
     def addClient(self, profile):
         #add a new client to our queue
@@ -29,7 +32,7 @@ class Engine:
         client.status = lib.Client.Status.OFFLINE
         pass
 
-    def check(self):
+    def cycle(self):
         for e in self.clients:
             # A client that is offline
             if e.status == lib.Client.Status.OFFLINE:
@@ -47,7 +50,6 @@ class Engine:
 
             for packet in queue:
                 args = packet.split(" ")
-                #self.log.write(str(e) + '\t' + packet) # debug
 
                 # check for pong, dont waste time
                 if args[0] == 'PING':
@@ -63,13 +65,28 @@ class Engine:
                 if e.status == lib.Client.Status.ONLINE:
                     if args[1] == 'PRIVMSG':
                         self.event.message(e, packet, args)
+                        continue
                     elif args[1] == 'NOTICE':
                         self.event.notice(e, packet, args)
+                        continue
+                    elif args[1] == 'JOIN':
+                        self.event.join(e, args)
+                        continue
+                    elif args[1] == 'PART':
+                        self.event.part(e, packet, args)
+                        continue
+                    elif args[1] == 'INVITE':
+                        self.event.invite(e, args[3][1:])
+                        continue
+                    elif args[1] == 'PONG':
+                        # we've been replied to
+                        e.pingAttempts = 0
+                        continue
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
                     else:
                         self.log.write("(unhandled packet) " + packet)
-                    continue
+                        continue
 
                 # A client still CONNECTING
                 if e.status == lib.Client.Status.CONNECTING:
@@ -106,11 +123,28 @@ class Engine:
             self.log.write('Error: no bots to be connected -- check run.py')
             return
 
+        # Helpful little printout
+        self.log.write('(Event) Loaded ' + str(len(self.event.modules)) + ' modules.')
+        self.log.write('(Timer) Loaded ' + str(len(self.timer.collection)) + ' timed-functions.')
+
         # start to handle the clients now
         while True:
             # handle clients now
-            self.check()
-            time.sleep(0.02) # prevent cpu lockup
+            self.cycle()
+
+            # check Timed-Functions
+            self.timer.cycle()
+
+            # prevent cpu lockup
+            time.sleep(0.01)
+
+class Module:
+    # Module profile
+    # Module name, [types], active
+    def __init__(self, name, types, active=True):
+        self.name = name
+        self.types = types if type(types) is list else [types]
+        self.active = active
 
 class Profile:
     # Client profile
@@ -131,3 +165,12 @@ class Network:
         self.port = port
         self.ssl = ssl
         self.password = password
+
+def timedString(seconds):
+	m = int(seconds / 60)
+	s = int(seconds - (m * 60))
+	h = 0 if m < 60 else m / 60
+	m = m if h == 0 else m - (h * 60)
+	d = 0 if h < 24 else h / 24
+	h = h if d == 0 else h - (d * 24)
+	return ("" if d == 0 else str(d) + "d") + ("" if h == 0 else str(h) + "h") + ("" if m == 0 else str(m) + "m") + str(s) + "s";
