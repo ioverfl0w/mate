@@ -50,7 +50,7 @@ class Client:
 
         # establish who we are with server
         self.send('NICK ' + self.profile.nick)
-        self.send('USER ' + self.profile.nick[0] + ' * * :' + self.profile.nick)
+        self.send('USER ' + self.profile.nick[0] + ' * * :m8')
 
     def msg(self, target, content, notice=False):
         self.send(('NOTICE' if notice else 'PRIVMSG') + ' '+ target + ' :' + content)

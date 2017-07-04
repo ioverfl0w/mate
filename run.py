@@ -10,7 +10,7 @@ rizon = lib.Engine.Network('irc.rizon.net', 6697, True)
 
 # Client Profile
 # lib.Engine.Profile(nick, network, nickservPass)
-token = lib.Engine.Profile('token', rizon)
+token = lib.Engine.Profile('mate', rizon)
 
 # Client autojoin channels
 token.ajoin = ["#apollo"]

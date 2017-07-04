@@ -69,6 +69,12 @@ class Engine:
                     elif args[1] == 'NOTICE':
                         self.event.notice(e, packet, args)
                         continue
+                    elif args[1] == 'JOIN':
+                        self.event.join(e, args)
+                        continue
+                    elif args[1] == 'PART':
+                        self.event.part(e, packet, args)
+                        continue
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
                         continue

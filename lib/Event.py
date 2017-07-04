@@ -27,6 +27,16 @@ class Event:
         for mod in self.getMods('NOTICE'):
             mod.notice(client, user, args[2] if args[2].startswith('#') else user[0], message)
 
+    def join(self, client, args):
+        user = self.getUser(args[0])
+        for mod in self.getMods('JOIN'):
+            mod.join(client, user, args[2][1:])
+
+    def part(self, client, packet, args):
+        user = self.getUser(args[0])
+        message = packet[packet.index(args[3]) + 1:]
+        print(message)
+
     # We are going to join any channel we are invited to
     def invite(self, client, location):
         # TODO - better secure from abuse
