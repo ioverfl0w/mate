@@ -35,8 +35,7 @@ class Event:
     def part(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet.index(args[3]) + 1:]
-        print(message)
-        
+
     # We are going to join any channel we are invited to
     def invite(self, client, location):
         # TODO - better secure from abuse

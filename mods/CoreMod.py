@@ -1,7 +1,7 @@
 import lib.Engine
 
 # Declare our VERSION
-VERSION = 'python-ircbot mate v0.1b'
+VERSION = 'python-ircbot mate v0.2b'
 
 class CoreMod:
 
@@ -30,3 +30,21 @@ class CoreMod:
         # source request
         if args[0].lower() == '.source' or args[0].lower() == '.bots':
             return client.msg(channel, 'mate [python] :: Source https://github.com/ioverfl0w/mate/')
+
+        if args[0].lower() == '!set' and client.engine.access.userRights(client, user[0]) >= client.engine.access.getLevel('admin'):
+            if not len(args) == 3:
+                return client.notice(user[0], 'Syntax: !set [nick] [level]')
+
+            try:
+                oLevl = client.engine.access.userRights(client, args[1])
+                nLevl = int(args[2])
+                if oLevl == nLevl: # no changed
+                    return client.notice(user[0], 'Access unchanged.')
+                if client.engine.access.setRights(client, args[1], nLevl):
+                    return client.msg(channel, 'Access changed (' + args[1] + ' ' + ('++' if nLevl - oLevl > 0 else '--') + ' ' + args[2] + ')')
+                return client.notice(user[0], 'Error occured while setting permissions.')
+            except:
+                return client.notice(user[0], 'Must be a valid access level.')
+
+        if args[0].lower() == '!rights' and client.engine.access.userRights(client, user[0]) > 0:
+            return client.notice(user[0], 'Access level: ' + str(client.engine.access.userRights(client, user[0])))

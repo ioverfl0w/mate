@@ -77,12 +77,13 @@ class Client:
         try:
             return self.sock.recv().decode('utf-8').strip()
         except socket.error:
-            return ""
+            return ''
 
     def __str__(self):
-        return "[Nick:" + self.profile.nick + ",Addr:" + self.profile.network.address + \
-                ",Port:" + str(self.profile.network.port) + ",SSL:" + str(self.profile.network.ssl) + \
-                "," + str(self.status) + "]";
+        return '[Nick:' + self.profile.nick + ',Network:' + self.profile.network.name + \
+                ', Addr:' + self.profile.network.address + ',Port:' + \
+                str(self.profile.network.port) + ',SSL:' + str(self.profile.network.ssl) + \
+                ',' + str(self.status) + ']';
 
 class Status(Enum):
     OFFLINE = 0,

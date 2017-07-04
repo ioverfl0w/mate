@@ -1,3 +1,4 @@
+import lib.Access
 import lib.Client
 import lib.Event
 import lib.Logger
@@ -20,6 +21,8 @@ class Engine:
         self.event = lib.Event.Event(self)
         # start a Time Keeper
         self.timer = lib.Timer.TimeKeeper(self)
+        # start an Access system
+        self.access = lib.Access.Access()
 
     def addClient(self, profile):
         #add a new client to our queue
@@ -160,7 +163,8 @@ class Network:
 
     # Network profile
     # Address (IP), port, ssl enabled, server password
-    def __init__(self, address, port=6667, ssl=False, password=None):
+    def __init__(self, name, address, port=6667, ssl=False, password=None):
+        self.name = name
         self.address = address
         self.port = port
         self.ssl = ssl

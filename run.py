@@ -6,14 +6,14 @@ engine = lib.Engine.Engine()
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)
-rizon = lib.Engine.Network('irc.rizon.net', 6697, True)
+rizon = lib.Engine.Network('Rizon', 'irc.rizon.net', 6697, True)
 
 # Client Profile
 # lib.Engine.Profile(nick, network, nickservPass)
-token = lib.Engine.Profile('mate', rizon)
+token = lib.Engine.Profile('token', rizon)
 
 # Client autojoin channels
-token.ajoin = ["#mate"]
+token.ajoin = ["#apollo"]
 
 # Client UMODES autoset
 token.umodes = "+p"
