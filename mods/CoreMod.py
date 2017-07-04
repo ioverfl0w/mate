@@ -8,7 +8,6 @@ class CoreMod:
     # This mod is primarily an example module, as well as some typical
     # bot compliance features. Things such as '.source' and VERSION
     # requests will be handled here.
-
     def __init__(self):
         # All mods need a Module instance, including name and types
         # types can either be a single string or a list of strings

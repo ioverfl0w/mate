@@ -13,7 +13,7 @@ rizon = lib.Engine.Network('irc.rizon.net', 6697, True)
 token = lib.Engine.Profile('mate', rizon)
 
 # Client autojoin channels
-token.ajoin = ["#apollo"]
+token.ajoin = ["#mate"]
 
 # Client UMODES autoset
 token.umodes = "+p"

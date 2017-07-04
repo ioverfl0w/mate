@@ -82,6 +82,8 @@ class Engine:
                         # we've been replied to
                         e.pingAttempts = 0
                         continue
+                    elif args[1] == 'INVITE':
+                        self.event.invite(e, args[3][1:])
                     else:
                         self.log.write("(unhandled packet) " + packet)
                         continue
