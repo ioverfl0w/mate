@@ -1,7 +1,7 @@
 import lib.Engine
 
 # Declare our VERSION
-VERSION = 'python-ircbot v0.1b'
+VERSION = 'python-ircbot mate v0.1b'
 
 class CoreMod:
 

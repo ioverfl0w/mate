@@ -33,18 +33,18 @@ class Stats:
         return res
 
     # Record user stats in client's server database for username
-    # Key should be the value to be altered by value amount
-    def recordStats(self, client, user, key, value):
+    # Key should be the value to be altered by +1
+    def recordStats(self, client, user, key):
         # case insensitive
         user = user.lower()
         # open the Network database
         db = shelve.open('./data/' + client.profile.network.address.lower() + '.db', writeback=True)
         try:
-            db[user][key] += value
+            db[user][key] += 1
             db[user]['s'] = time.time()
         except:
             db[user] = new_user
-            client.engine.log.write('Error while writing ' + key + ' stats, assuming new user')
+            client.engine.log.write('Error while writing ' + key + ' stats, assuming new user (' + user + ')')
         finally:
             db.close()
 
@@ -58,7 +58,7 @@ class Stats:
             db[user]['s'] = time.time()
         except:
             db[user] = new_user
-            client.engine.log.write('Error while writing message stats, assuming new user')
+            client.engine.log.write('Error while writing message stats, assuming new user (' + user + ')')
         finally:
             db.close()
 
@@ -90,4 +90,12 @@ class Stats:
             if usr == None: #no user to report
                 return client.msg(channel, user[0] + ', I don\'t know who ' + args[1] + ' is.')
             else:
-                return client.msg(channel, user[0] + ', ' + args[1] + ' was last seen ' + lib.Engine.timedString(time.time() - usr['s']) + ' ago.')
+                return client.msg(channel, user[0] + ', ' + args[1] + ' was last seen ' + lib.Engine.timedString((time.time() - usr['s'])) + ' ago.')
+
+    def join(self, client, user, location):
+        # Record this user a join
+        self.recordStats(client, user[0], 'j')
+
+    def part(self, client, user):
+        # Record this user a part
+        self.recordStats(client, user[0], 'p')
