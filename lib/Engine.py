@@ -68,28 +68,24 @@ class Engine:
                 if e.status == lib.Client.Status.ONLINE:
                     if args[1] == 'PRIVMSG':
                         self.event.message(e, packet, args)
-                        continue
                     elif args[1] == 'NOTICE':
                         self.event.notice(e, packet, args)
-                        continue
                     elif args[1] == 'JOIN':
                         self.event.join(e, args)
-                        continue
                     elif args[1] == 'PART':
                         self.event.part(e, packet, args)
-                        continue
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
-                        continue
                     elif args[1] == 'PONG':
                         # we've been replied to
                         e.pingAttempts = 0
-                        continue
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
+                    # (CoreMod Hook) Returning an identified user response from WHOIS
+                    elif args[1] == '307':
+                        self.event.authenticate(e, args[3])
                     else:
                         self.log.write("(unhandled packet) " + packet)
-                        continue
 
                 # A client still CONNECTING
                 if e.status == lib.Client.Status.CONNECTING:

@@ -25,7 +25,7 @@ class Event:
         user = self.getUser(args[0])
         message = packet[packet[1:].index(' :') + 3:]
         for mod in self.getMods('NOTICE'):
-            mod.notice(client, user, args[2] if args[2].startswith('#') else user[0], message)
+            mod.notice(client, user, args[2], message)
 
     def join(self, client, args):
         user = self.getUser(args[0])
@@ -35,6 +35,11 @@ class Event:
     def part(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet.index(args[3]) + 1:]
+
+    def authenticate(self, client, user):
+        # TODO - create a timed-function that can automatically destory authenticated
+        # sessions when duration has expired.
+        pass
 
     # We are going to join any channel we are invited to
     def invite(self, client, location):

@@ -12,7 +12,7 @@ class CoreMod:
         # All mods need a Module instance, including name and types
         # types can either be a single string or a list of strings
         # lib.Engine.Module(name, types, active=True)
-        self.module = lib.Engine.Module('CoreMod', 'PRIVMSG')
+        self.module = lib.Engine.Module('CoreMod', ['PRIVMSG', 'NOTICE'])
 
     # message - process a PRIVMSG irc message
     # client - the client who received the packet
@@ -48,3 +48,12 @@ class CoreMod:
 
         if args[0].lower() == '!rights' and client.engine.access.userRights(client, user[0]) > 0:
             return client.notice(user[0], 'Access level: ' + str(client.engine.access.userRights(client, user[0])))
+
+    # notice is dealt with similarly to messages, but almost always the target (channel) is the Client
+    def notice(self, client, user, target, message):
+        if not target.lower() == client.profile.nick.lower():
+            return # this module only will deal will NOTICES to the client directly
+            
+        # Authenticate the user with the Access system, by checking if they are identified
+        if message.lower() == 'auth':
+            return client.send('WHOIS :' + user[0])

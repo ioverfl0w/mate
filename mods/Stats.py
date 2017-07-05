@@ -9,6 +9,11 @@ dir = './data/'
 
 class Stats:
 
+    # Stats
+    #
+    # Record numerical stats for users. Module is stand-alone, meaning you can
+    # disable this module and nothing else will break.
+
     def __init__(self):
         self.module = lib.Engine.Module('Stats', ['PRIVMSG', 'JOIN', 'PART'])
 
