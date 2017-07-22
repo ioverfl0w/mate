@@ -79,11 +79,15 @@ class Stats:
         # show off your stats to the channel
         if args[0].lower() == '!me':
             usr = self.getStats(client, user[0])
-            return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
+            try:
+                return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
                     '\0033Joins:\003 ' + str(usr['j']) + ' \0033Parts:\003 ' + \
                     str(usr['p']) + ' \0033Messages:\003 ' + str(usr['m']) + \
                     ' \0033Characters:\003 ' + str(usr['c']) + ' \0033Avg CPM:\003 ' + \
                     str(round(Decimal(usr['c']) / Decimal(usr['m']), 2)) )
+            except:
+                # Users not registered (no stats recorded) will cause an error
+                return client.msg(channel, '\0034Error\003 unable to recall stats for ' + user[0])
 
         # check the last time a specified user was seen doing something
         if args[0].lower() == '!seen':

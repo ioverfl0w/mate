@@ -48,14 +48,14 @@ class Engine:
 
             # we are expecting something
             incoming = str(e.read())
-            if incoming == "":
+            if incoming == '':
                 continue # screw off, blank lines
 
             # split different messages read at a single time
             queue = incoming.split('\n')
 
             for packet in queue:
-                args = packet.split(" ")
+                args = packet.split(' ')
 
                 # check for pong, dont waste time
                 if args[0] == 'PING':
@@ -104,7 +104,7 @@ class Engine:
                             e.msg('NickServ', 'identify ' + e.profile.nickserv)
                         # set our UMODES
                         if not e.profile.umodes == None:
-                            e.send("MODE " + e.profile.nick + " " + e.profile.umodes)
+                            e.send('MODE ' + e.profile.nick + ' ' + e.profile.umodes)
                         time.sleep(0.25) # give NickServ time to identify us
                         # check autojoin
                         if not e.profile.ajoin == None:
@@ -178,4 +178,4 @@ def timedString(seconds):
 	m = m if h == 0 else m - (h * 60)
 	d = 0 if h < 24 else h / 24
 	h = h if d == 0 else h - (d * 24)
-	return ("" if d == 0 else str(d) + "d") + ("" if h == 0 else str(h) + "h") + ("" if m == 0 else str(m) + "m") + str(s) + "s";
+	return ('' if d == 0 else str(d) + 'd') + ('' if h == 0 else str(h) + 'h') + ('' if m == 0 else str(m) + 'm') + str(s) + 's';
