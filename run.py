@@ -2,7 +2,8 @@ import lib.Engine
 import mods.Stats
 
 # Engine creation
-engine = lib.Engine.Engine()
+# Debug mode is set when any value but 0 is declared in args
+engine = lib.Engine.Engine(1)
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)

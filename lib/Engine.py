@@ -12,7 +12,7 @@ class Engine:
     # This will ensure all clients are processed and managed. will
     # attempt to reconnect disconnected bots (TODO add 'halted' option)
 
-    def __init__(self):
+    def __init__(self, DEBUG=0):
         # our clients
         self.clients = []
         # start a log
@@ -23,6 +23,8 @@ class Engine:
         self.timer = lib.Timer.TimeKeeper(self)
         # start an Access system
         self.access = lib.Access.Access()
+        # Debug MODE
+        self.debug = False if DEBUG == 0 else True
 
     def addClient(self, profile):
         #add a new client to our queue
@@ -39,7 +41,8 @@ class Engine:
         for e in self.clients:
             # A client that is offline
             if e.status == lib.Client.Status.OFFLINE:
-                self.log.write('Connecting ' + str(e))
+                if self.debug:
+                    self.log.write('Connecting ' + str(e))
                 e.connect()
                 continue
 
@@ -85,13 +88,14 @@ class Engine:
                     elif args[1] == '307':
                         self.event.authenticate(e, args[3])
                     else:
-                        self.log.write("(unhandled packet) " + packet)
+                        if self.debug:
+                            self.log.write('(unhandled packet) ' + packet)
 
                 # A client still CONNECTING
                 if e.status == lib.Client.Status.CONNECTING:
                     if args[1] == '433': # nick in use
                         e.quit() # close this connection
-                        self.log.write("!! error - nick in use with bot:\n" + str(e))
+                        self.log.write('!! error - nick in use with bot:\n'+ str(e))
                         quit() # quit the program
                         # TODO - better handle nick in use errors
                     if args[1] == '376' or args[1] == '254': # assume we are connected now
@@ -108,11 +112,12 @@ class Engine:
                                 e.join(chan)
                         # change our status
                         e.status = lib.Client.Status.ONLINE
+                        self.log.write('(Client) ' + e.profile.nick + '@' + e.profile.network.name + ' connected.')
                     continue
 
                 # a client just booting up
                 if e.status == lib.Client.Status.BOOTING:
-                    if not packet == "":
+                    if not packet == '':
                         e.identify()
                     continue
 
@@ -147,7 +152,7 @@ class Module:
 
 class Profile:
     # Client profile
-    # Nick name, NickServ Password, Network (see below)
+    # Nick name, Network (see below), NickServ Password (optional)
     def __init__(self, nick, network, nspw=None):
         self.nick = nick
         self.network = network
