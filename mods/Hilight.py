@@ -13,7 +13,7 @@ class Hilight:
 
     def __init__(self):
         self.module = lib.Engine.Module('Hilight', 'PRIVMSG')
-        # fetch auto
+        
         # Start a new scrollback database
         self.start()
 
