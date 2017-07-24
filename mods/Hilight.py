@@ -13,7 +13,7 @@ class Hilight:
 
     def __init__(self):
         self.module = lib.Engine.Module('Hilight', 'PRIVMSG')
-        
+
         # Start a new scrollback database
         self.start()
 
@@ -25,11 +25,15 @@ class Hilight:
 
     def start(self):
         #load our users
-        hilite = shelve.open(dir + 'hilite.db', writeback=True)
+        hilite = shelve.open(dir + 'hl-core.db', writeback=True)
         try:
-
+            
         except:
-            pass
+            # no database found, create one
+            # list of users (netName, usrNick, chkoutDuration[mins], timestampLastSeen)
+            hilite['#auto'] = []
+            # currently checked out users (netName, usrNick, list of events fully processed)
+            hilite['#out'] = []
         finally:
             hilite.close()
         # TODO need to establish certain constant Things
@@ -37,6 +41,6 @@ class Hilight:
         # currently checked out users, their hilite events stored with their nick
 
         #clear the scrollback
-        scrollback = shelve.open(dir + 'scrollback.db', writeback=True)
+        scrollback = shelve.open(dir + 'hl-sb.db', writeback=True)
         scrollback.clear()
         scrollback.close()
