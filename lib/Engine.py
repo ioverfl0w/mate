@@ -53,7 +53,6 @@ class Engine:
 
             # split different messages read at a single time
             queue = incoming.split('\n')
-
             for packet in queue:
                 args = packet.split(' ')
 

@@ -1,4 +1,5 @@
 import lib.Engine
+import mods.Hilight
 import mods.Stats
 
 # Engine creation
@@ -23,6 +24,7 @@ token.umodes = "+p"
 engine.addClient(token)
 
 # Load our modules
+engine.event.loadMod(mods.Hilight.Hilight())
 engine.event.loadMod(mods.Stats.Stats())
 
 # Start the Engine
