@@ -240,7 +240,7 @@ class Hilight:
 def pastee(desc, txt):
 	import requests # Import Requests
 
-	API_KEY = 'c55542ae22458ab3620af958a04fa20a' # Paste your API_KEY here in single quotes
+	API_KEY = '' # Paste your API_KEY here in single quotes
 	post_param = {'key':API_KEY,'description':desc,'language':'plain','paste':txt,'format':'simple'} #Parameters to pass to the Pastee API
 	r = None
 
