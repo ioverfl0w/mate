@@ -85,9 +85,14 @@ class Hilight:
                 del self.events[i - c]
                 c += 1
 
+            #if no events, stop now
+            if len(events) == 0:
+                return
+
             #convert all events into pastebin format_exc
             events = self.getallevents(client, user[0])
-            content = str(len(events)) + ' events for ' + user[0] + ' on ' + client.profile.network.name + '\n\n'
+            content = str(len(events)) + ' event ' + ('' if len(events) == 1 else 's') +' for ' \
+                        + user[0] + ' on ' + client.profile.network.name + '\n\n'
             for event in events:
                 content += 'Hilight Event in ' + event['chan'] + '\n'
                 for scrollback in event['sb']:
