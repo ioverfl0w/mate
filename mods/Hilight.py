@@ -18,6 +18,8 @@ class Hilight:
     # TODO - better track users between being checked out and being waited on
     # Right now they are all in one list in local memory, maybe splitting later
     # if ever scaled larger
+    #
+    # TODO - change from Paste.ee to something else that does not require an API key
 
     def __init__(self):
         self.module = lib.Engine.Module('Hilight', 'PRIVMSG')

@@ -35,6 +35,13 @@ class Event:
     def part(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet.index(args[3]) + 1:]
+        for mod in self.getMods('PART'):
+            mod.part(client, user, message)
+
+    def nick(self, client, args):
+        oldNick = self.getUser(args[0])
+        for mod in self.getMods('NICK'):
+            mod.nick(client, oldNick, args[2][1:])
 
     def authenticate(self, client, user):
         # TODO - create a timed-function that can automatically destory authenticated

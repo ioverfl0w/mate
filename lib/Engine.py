@@ -83,6 +83,8 @@ class Engine:
                         e.pingAttempts = 0
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
+                    elif args[1] == 'NICK':
+                        self.event.nick(e, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
                     elif args[1] == '307':
                         self.event.authenticate(e, args[3])

@@ -52,11 +52,11 @@ class Client:
         self.send('NICK ' + self.profile.nick)
         self.send('USER ' + self.profile.nick[0] + ' * * :m8')
 
-    def msg(self, target, content, notice=False):
-        self.send(('NOTICE' if notice else 'PRIVMSG') + ' '+ target + ' :' + content)
+    def msg(self, target, content):
+        self.send('PRIVMSG' + ' '+ target + ' :' + content)
 
     def notice(self, target, content):
-        self.msg(target, content, True)
+        self.send('NOTICE ' + target + ' :' + content)
 
     def join(self, channel):
         self.send('JOIN ' + channel)
