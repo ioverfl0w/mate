@@ -32,6 +32,15 @@ class Event:
         for mod in self.getMods('JOIN'):
             mod.join(client, user, args[2][1:])
 
+    def kick(self, client, packet, args):
+        user = self.getUser(args[0])
+        try:
+            message = packet[packet.index(args[4]) + 1:]
+        except:
+            message = None
+        for mod in self.getMods('KICK'):
+            mod.kick(client, args[2], user, args[3], message)
+
     def part(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet.index(args[3]) + 1:]

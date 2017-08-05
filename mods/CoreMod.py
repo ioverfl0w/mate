@@ -13,7 +13,7 @@ class CoreMod:
         # All mods need a Module instance, including name and types
         # types can either be a single string or a list of strings
         # lib.Engine.Module(name, types, active=True)
-        self.module = lib.Engine.Module('CoreMod', ['PRIVMSG', 'NOTICE', 'NICK', 'KICK'])
+        self.module = lib.Engine.Module('CoreMod', ['PRIVMSG', 'NOTICE'])
 
     # message - process a PRIVMSG irc message
     # client - the client who received the packet
