@@ -1,3 +1,4 @@
+import timer.AccessClock
 import timer.Pinger
 import time
 
@@ -15,6 +16,7 @@ class TimeKeeper:
 
         # We can assure some Timed-Functions are automatically loaded
         self.loadTimeFunc(timer.Pinger.Pinger())
+        self.loadTimeFunc(timer.AccessClock.AccessClock())
 
     # Go through and check our functions if they are ready yet
     def cycle(self):
@@ -28,6 +30,13 @@ class TimeKeeper:
         #self.engine.log.write('(Timer) Loading timed-function ' + func.schedule.name + ' (' + ('active' if func.schedule.active else 'dormant') + ')')
         self.collection.append(func)
 
+    # Fetch a timed-function based off its name
+    def fetchTimeFunc(self, name):
+        for func in self.collection:
+            if func.schedule.name == name:
+                return func
+        return None
+
 class Schedule:
 
     # Schedule
@@ -35,7 +44,7 @@ class Schedule:
     # Tool object used with timed-function modules to maintain proper
     # structure for TimeKeeper
 
-    def __init__(self, name, delay):
+    def __init__(self, name, delay, active=True):
         # our A E S T H E T I C name
         self.name = name
         # our delay (in seconds)
@@ -43,7 +52,7 @@ class Schedule:
         # Time since last called
         self.start = time.time()
         # Toggle to disable the timed-function
-        self.active = True
+        self.active = active
 
     # check if time is up
     def check(self):

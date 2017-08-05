@@ -7,7 +7,8 @@ class CoreMod:
 
     # CoreMod
     #
-    # Core Functions always loaded by default within Event engine creation
+    # Core Functions always loaded by default within Event engine creation.
+    # Key component for Access system
 
     def __init__(self):
         # All mods need a Module instance, including name and types

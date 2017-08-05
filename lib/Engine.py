@@ -21,8 +21,8 @@ class Engine:
         self.event = lib.Event.Event(self)
         # start a Time Keeper
         self.timer = lib.Timer.TimeKeeper(self)
-        # start an Access system
-        self.access = lib.Access.Access()
+        # start an Access system (must load after Timer)
+        self.access = lib.Access.Access(self)
         # Debug MODE
         self.debug = False if DEBUG == 0 else True
 
@@ -88,9 +88,9 @@ class Engine:
                     # (CoreMod Hook) Returning an identified user response from WHOIS
                     elif args[1] == '307':
                         self.event.authenticate(e, args[3])
-                    else:
-                        if self.debug:
-                            self.log.write('(unhandled packet) ' + packet)
+                    #else:
+                        #if self.debug:
+                        #    self.log.write('(unhandled packet) ' + packet)
 
                 # A client still CONNECTING
                 if e.status == lib.Client.Status.CONNECTING:

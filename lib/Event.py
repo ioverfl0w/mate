@@ -53,8 +53,8 @@ class Event:
             mod.nick(client, oldNick, args[2][1:])
 
     def authenticate(self, client, user):
-        # TODO - create a timed-function that can automatically destory authenticated
-        # sessions when duration has expired.
+        # TODO - prevent duplicate entries, check user rights in database
+        self.engine.access.auth(client, user)
         pass
 
     # We are going to join any channel we are invited to

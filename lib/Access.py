@@ -1,6 +1,8 @@
 import shelve
 
+# Directory the contains the access databases
 dir = './data/'
+# Default access scale
 LEVELS = {'OWNER': 3, 'ADMIN': 2, 'TRUSTED': 1, 'USER': 0, 'BLOCKED': -1}
 
 class Access:
@@ -14,8 +16,16 @@ class Access:
     # 0 - Normal user
     # -1 - Ignored/Blocked
 
+    def __init__(self, engine):
+        # AccessClock instance
+        self.clock = engine.timer.fetchTimeFunc('AccessClock')
+
     def getLevel(self, level):
         return LEVELS[level.upper()]
+
+    # Authenticate a user within the system
+    def auth(self, client, nick):
+        self.clock.authenticate(client, nick)
 
     # Return the Level of rights for the specified user on the receiving Client
     def userRights(self, client, nick):
