@@ -5,14 +5,15 @@ VERSION = 'python-ircbot v0.2b'
 
 class CoreMod:
 
-    # This mod is primarily an example module, as well as some typical
-    # bot compliance features. Things such as '.source' and VERSION
-    # requests will be handled here.
+    # CoreMod
+    #
+    # Core Functions always loaded by default within Event engine creation
+
     def __init__(self):
         # All mods need a Module instance, including name and types
         # types can either be a single string or a list of strings
         # lib.Engine.Module(name, types, active=True)
-        self.module = lib.Engine.Module('CoreMod', ['PRIVMSG', 'NOTICE', 'NICK'])
+        self.module = lib.Engine.Module('CoreMod', ['PRIVMSG', 'NOTICE', 'NICK', 'KICK'])
 
     # message - process a PRIVMSG irc message
     # client - the client who received the packet

@@ -76,13 +76,13 @@ class Engine:
                         self.event.join(e, args)
                     elif args[1] == 'PART':
                         self.event.part(e, packet, args)
+                    elif args[1] == 'KICK':
+                        self.event.kick(e, packet, args)
                     elif args[1] == 'INVITE':
                         self.event.invite(e, args[3][1:])
                     elif args[1] == 'PONG':
                         # we've been replied to
                         e.pingAttempts = 0
-                    elif args[1] == 'INVITE':
-                        self.event.invite(e, args[3][1:])
                     elif args[1] == 'NICK':
                         self.event.nick(e, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
