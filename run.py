@@ -4,7 +4,7 @@ from mods import Stats
 
 # Engine creation
 # Debug mode is set when any value but 0 is declared in args
-engine = Engine.Engine(1)
+engine = Engine.Engine(0)
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)
@@ -24,7 +24,7 @@ token.umodes = "+p"
 engine.addClient(token)
 
 # Load our modules
-engine.event.loadMod(Hilight.Hilight())
+engine.event.loadMod(Hilight.Hilight('paste.ee-api-key-here'))
 engine.event.loadMod(Stats.Stats())
 
 # Start the Engine

@@ -21,13 +21,15 @@ class Hilight:
     #
     # TODO - change from Paste.ee to something else that does not require an API key
 
-    def __init__(self):
+    def __init__(self, apikey):
         self.module = lib.Engine.Module('Hilight', 'PRIVMSG')
 
         # List of users opted in for hilight services
         self.watch = []
         # Pending events, not yet complete
         self.events = []
+        # API Key used with Paste.ee
+        self.key = apikey
         # Sync with database files
         self.hlsync()
 
@@ -102,7 +104,7 @@ class Hilight:
                 content += '[end of event] \n\n'
 
             #upload to pastebin and send our results
-            paste = pastee('Hilights for ' + user[0], content)
+            paste = pastee(self.key, 'Hilights for ' + user[0], content)
             return client.notice(user[0], 'Welcome back, you\'ve had ' + str(len(events)) + \
                             ' hilight' + ('' if len(events) == 1 else 's') +' since you\'ve ' + \
                             'been gone. ' + (paste.decode('utf-8') if len(events) > 0 else ''))
@@ -244,11 +246,10 @@ class Hilight:
             hl.close()
             return self.hlsync(upload)
 
-def pastee(desc, txt):
+def pastee(key, desc, txt):
 	import requests # Import Requests
 
-	API_KEY = '' # Paste your API_KEY here in single quotes
-	post_param = {'key':API_KEY,'description':desc,'language':'plain','paste':txt,'format':'simple'} #Parameters to pass to the Pastee API
+	post_param = {'key':key,'description':desc,'language':'plain','paste':txt,'format':'simple'} #Parameters to pass to the Pastee API
 	r = None
 
 	try:
