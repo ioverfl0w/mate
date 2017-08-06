@@ -1,18 +1,18 @@
-import lib.Engine
-import mods.Hilight
-import mods.Stats
+from lib import Engine
+from mods import Hilight
+from mods import Stats
 
 # Engine creation
 # Debug mode is set when any value but 0 is declared in args
-engine = lib.Engine.Engine(1)
+engine = Engine.Engine(0)
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)
-rizon = lib.Engine.Network('Rizon', 'irc.rizon.net', 6697, True)
+rizon = Engine.Network('Rizon', 'irc.rizon.net', 6697, True)
 
 # Client Profile
 # lib.Engine.Profile(nick, network, nickservPass)
-token = lib.Engine.Profile('token', rizon)
+token = Engine.Profile('token', rizon)
 
 # Client autojoin channels
 token.ajoin = ["#apollo"]
@@ -24,8 +24,8 @@ token.umodes = "+p"
 engine.addClient(token)
 
 # Load our modules
-engine.event.loadMod(mods.Hilight.Hilight())
-engine.event.loadMod(mods.Stats.Stats())
+engine.event.loadMod(Hilight.Hilight())
+engine.event.loadMod(Stats.Stats())
 
 # Start the Engine
 engine.execute()

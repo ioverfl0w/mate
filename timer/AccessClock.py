@@ -2,7 +2,7 @@ import lib.Timer
 import time
 
 # Timeout duration (in minutes)
-timeout = 1
+timeout = 30
 
 class AccessClock:
 
@@ -17,14 +17,32 @@ class AccessClock:
 
     # Insert newly authenticated user into system for duration of time specified above
     def authenticate(self, client, nick):
-        self.auth.append({ 'user' : nick  + '@' + client.profile.network.name,
+        # We reference users in a 'nick@network' format for access
+        user = nick  + '@' + client.profile.network.name
+
+        # Check for duplicate users
+        for a in self.auth:
+            if a['user'].lower() == user.lower():
+                return client.engine.log.write('[AC] Duplicate auth entry attempted.')
+
+        self.auth.append({ 'user' : user,
                                         'exp': (time.time() + (timeout * 60)) })
         #make sure the Clock is active with a set time
-        client.engine.log.write('[AC] Added user ' + nick  + '@' + client.profile.network.name + ' to AC.')
+        client.notice(nick, 'You have been authenticated.')
+        client.engine.log.write('[AC] Added user ' + user + ' to AC.')
         if not self.schedule.active:
             self.schedule.delay = timeout * 60
             self.schedule.active = True
             client.engine.log.write('[AC] Clock enabled.')
+
+    # Returns the amount of time remaining if the user is authenticated, otherwise
+    # will return 0
+    def isAuthed(self, client, nick):
+        nick = (nick + '@' + client.profile.network.name).lower()
+        for a in self.auth:
+            if a['user'].lower() == nick:
+                return a['exp'] - time.time()
+        return 0
 
     def execute(self, engine):
         rem = []

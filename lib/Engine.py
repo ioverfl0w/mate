@@ -1,9 +1,9 @@
-import lib.Access
-import lib.Client
-import lib.Event
-import lib.Logger
+from lib import Access
+from lib import Client
+from lib import Event
+from lib import Logger
 import time
-from lib.Timer import TimeKeeper
+from lib import Timer
 
 class Engine:
 
@@ -16,33 +16,32 @@ class Engine:
         # our clients
         self.clients = []
         # start a log
-        self.log = lib.Logger.Logger()
+        self.log = Logger.Logger()
         # start an Event engine
-        self.event = lib.Event.Event(self)
+        self.event = Event.Event(self)
         # start a Time Keeper
-        self.timer = lib.Timer.TimeKeeper(self)
+        self.timer = Timer.TimeKeeper(self)
         # start an Access system (must load after Timer)
-        self.access = lib.Access.Access(self)
+        self.access = Access.Access(self)
         # Debug MODE
         self.debug = False if DEBUG == 0 else True
 
     def addClient(self, profile):
         #add a new client to our queue
-        self.clients.append(lib.Client.Client(self, profile))
+        self.clients.append(Client.Client(self, profile))
 
     def dead(self, client):
         # a client has reported a dead connection,
         # we need to fix this be reconnecting
         self.log.write('! client reported dead !')
-        client.status = lib.Client.Status.OFFLINE
+        client.status = Client.Status.OFFLINE
         pass
 
     def cycle(self):
         for e in self.clients:
             # A client that is offline
-            if e.status == lib.Client.Status.OFFLINE:
-                if self.debug:
-                    self.log.write('Connecting ' + str(e))
+            if e.status == Client.Status.OFFLINE:
+                self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' + e.profile.network.name + ' ...')
                 e.connect()
                 continue
 
@@ -67,7 +66,7 @@ class Engine:
                     return
 
                 # A healthy client, check for module triggers
-                if e.status == lib.Client.Status.ONLINE:
+                if e.status == Client.Status.ONLINE:
                     if args[1] == 'PRIVMSG':
                         self.event.message(e, packet, args)
                     elif args[1] == 'NOTICE':
@@ -87,13 +86,13 @@ class Engine:
                         self.event.nick(e, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
                     elif args[1] == '307':
-                        self.event.authenticate(e, args[3])
-                    #else:
-                        #if self.debug:
-                        #    self.log.write('(unhandled packet) ' + packet)
+                        self.access.auth(e, args[3])
+                    else:
+                        if self.debug:
+                            self.log.write('(unhandled packet) ' + packet)
 
                 # A client still CONNECTING
-                if e.status == lib.Client.Status.CONNECTING:
+                if e.status == Client.Status.CONNECTING:
                     if args[1] == '433': # nick in use
                         e.quit() # close this connection
                         self.log.write('!! error - nick in use with bot:\n'+ str(e))
@@ -112,12 +111,12 @@ class Engine:
                             for chan in e.profile.ajoin:
                                 e.join(chan)
                         # change our status
-                        e.status = lib.Client.Status.ONLINE
-                        self.log.write('(Client) ' + e.profile.nick + '@' + e.profile.network.name + ' connected.')
+                        e.status = Client.Status.ONLINE
+                        self.log.write('(Engine) Client ' + e.profile.nick + ' on ' + e.profile.network.name + ' connected.')
                     continue
 
                 # a client just booting up
-                if e.status == lib.Client.Status.BOOTING:
+                if e.status == Client.Status.BOOTING:
                     if not packet == '':
                         e.identify()
                     continue
@@ -129,8 +128,9 @@ class Engine:
             return
 
         # Helpful little printout
-        self.log.write('(Event) Loaded ' + str(len(self.event.modules)) + ' modules.')
-        self.log.write('(Timer) Loaded ' + str(len(self.timer.collection)) + ' timed-functions.')
+        self.log.write('(Engine) Loaded ' + str(len(self.clients)) + ' client' + ('s' if len(self.clients) > 1 else '') + '.')
+        self.log.write('(Event) Loaded ' + str(len(self.event.modules)) + ' module' + ('s' if len(self.event.modules) > 1 else '') + '.')
+        self.log.write('(Timer) Loaded ' + str(len(self.timer.collection)) + ' timed-function' + ('s' if len(self.timer.collection) > 1 else '') + '.')
 
         # start to handle the clients now
         while True:

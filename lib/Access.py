@@ -27,6 +27,10 @@ class Access:
     def auth(self, client, nick):
         self.clock.authenticate(client, nick)
 
+    # Check it authenticated, and return their granted permission level
+    def getCurrentRights(self, client, nick):
+        return self.userRights(client, nick) if self.clock.isAuthed(client, nick) > 0 else 0
+
     # Return the Level of rights for the specified user on the receiving Client
     def userRights(self, client, nick):
         nick = nick.lower()

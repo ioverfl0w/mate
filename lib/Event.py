@@ -52,11 +52,6 @@ class Event:
         for mod in self.getMods('NICK'):
             mod.nick(client, oldNick, args[2][1:])
 
-    def authenticate(self, client, user):
-        # TODO - prevent duplicate entries, check user rights in database
-        self.engine.access.auth(client, user)
-        pass
-
     # We are going to join any channel we are invited to
     def invite(self, client, location):
         # TODO - better secure from abuse
