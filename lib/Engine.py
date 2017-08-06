@@ -41,8 +41,10 @@ class Engine:
         for e in self.clients:
             # A client that is offline
             if e.status == Client.Status.OFFLINE:
-                self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' + e.profile.network.name + ' ...')
-                e.connect()
+                self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' +\
+                            e.profile.network.address + ':' + ('+' if e.profile.network.ssl else '') + str(e.profile.network.port) + ' ...')
+                e.connect() #build the socket layers
+                e.identify() # communicate with the server and log in
                 continue
 
             # we are expecting something
@@ -113,12 +115,6 @@ class Engine:
                         # change our status
                         e.status = Client.Status.ONLINE
                         self.log.write('(Engine) Client ' + e.profile.nick + ' on ' + e.profile.network.name + ' connected.')
-                    continue
-
-                # a client just booting up
-                if e.status == Client.Status.BOOTING:
-                    if not packet == '':
-                        e.identify()
                     continue
 
     def execute(self):

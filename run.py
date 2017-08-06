@@ -4,7 +4,7 @@ from mods import Stats
 
 # Engine creation
 # Debug mode is set when any value but 0 is declared in args
-engine = Engine.Engine(0)
+engine = Engine.Engine(1)
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)

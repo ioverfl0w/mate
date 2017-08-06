@@ -60,5 +60,7 @@ class CoreMod:
             return # this module only will deal will NOTICES to the client directly
 
         # Authenticate the user with the Access system, by checking if they are identified
-        if message.lower() == 'auth' and client.engine.access.userRights(client, user[0]) > Access.LEVELS['USER']:
+        if message.lower() == 'auth' and \
+            client.engine.access.userRights(client, user[0]) > Access.LEVELS['USER'] and \
+            client.engine.access.getCurrentRights(client, user[0]) == Access.LEVELS['USER']:
             return client.send('WHOIS :' + user[0])

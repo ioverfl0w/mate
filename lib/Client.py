@@ -75,7 +75,7 @@ class Client:
 
     def read(self):
         try:
-            return self.sock.recv().decode('utf-8').strip()
+            return self.sock.recv(4096).decode('utf-8').strip()
         except socket.error:
             return ''
 
