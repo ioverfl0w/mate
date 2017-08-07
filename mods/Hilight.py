@@ -5,8 +5,8 @@ import time
 # Scrollback limit for hilight events
 scrollback_limit = 5
 # Database paths
-scrollback_db = './data/hl-sb'
-hilight_db = './data/hl-core'
+scrollback_db = './data/hl-sb.db'
+hilight_db = './data/hl-core.db'
 
 class Hilight:
 
