@@ -22,7 +22,7 @@ class Stats:
         # case insensitive
         user = user.lower()
         # open the specific Network's database
-        db = shelve.open(dir + client.profile.network.name.lower() + '.db', writeback=True)
+        db = shelve.open(dir + client.profile.network.name.lower(), writeback=True)
         try:
             res = db[user]
         except:
@@ -44,7 +44,7 @@ class Stats:
         # case insensitive
         user = user.lower()
         # open the Network database
-        db = shelve.open(dir + client.profile.network.name.lower() + '.db', writeback=True)
+        db = shelve.open(dir + client.profile.network.name.lower(), writeback=True)
         try:
             db[user][key] += 1
             db[user]['s'] = time.time()
@@ -57,7 +57,7 @@ class Stats:
     # Similar to recordStats(..) but we are changing two values
     def recordMsgStats(self, client, user, size):
         user = user.lower()
-        db = shelve.open(dir + client.profile.network.name.lower() + '.db', writeback=True)
+        db = shelve.open(dir + client.profile.network.name.lower(), writeback=True)
         try:
             db[user]['m'] += 1
             db[user]['c'] += size
