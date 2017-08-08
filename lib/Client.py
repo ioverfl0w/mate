@@ -89,4 +89,5 @@ class Status(Enum):
     OFFLINE = 0,
     ONLINE = 1,
     CONNECTING = 2,
-    BOOTING = 3
+    BOOTING = 3,
+    HALTED = 4

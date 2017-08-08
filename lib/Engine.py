@@ -38,7 +38,13 @@ class Engine:
         pass
 
     def cycle(self):
+        halted = 0
         for e in self.clients:
+            # A client that is no longer active, Ignored
+            if e.status == Client.Status.HALTED:
+                halted += 1
+                continue
+
             # A client that is offline
             if e.status == Client.Status.OFFLINE:
                 self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' +\
@@ -91,15 +97,15 @@ class Engine:
                         self.access.auth(e, args[3])
                     else:
                         if self.debug:
-                            self.log.write('(unhandled packet) ' + packet)
+                            self.log.write('(unhandled) ' + packet)
 
                 # A client still CONNECTING
                 if e.status == Client.Status.CONNECTING:
                     if args[1] == '433': # nick in use
                         e.quit() # close this connection
-                        self.log.write('!! error - nick in use with bot:\n'+ str(e))
-                        quit() # quit the program
-                        # TODO - better handle nick in use errors
+                        self.log.write('(Engine) !! CLIENT HALTED !! nick in use -> '+ str(e))
+                        e.status = Client.Status.HALTED
+                        continue
                     if args[1] == '376' or args[1] == '254': # assume we are connected now
                         # identify with nickserv
                         if not e.profile.nickserv == None:
@@ -117,10 +123,15 @@ class Engine:
                         self.log.write('(Engine) Client ' + e.profile.nick + ' on ' + e.profile.network.name + ' connected.')
                     continue
 
+        # If all of our clients are halted, shutdown program
+        if halted == len(self.clients):
+            self.log.write('(Engine) No active clients, terminating...')
+            return quit()
+
     def execute(self):
         # make sure we have clients to be handled
         if len(self.clients) == 0:
-            self.log.write('Error: no bots to be connected -- check run.py')
+            self.log.write('(Engine) Error: no bots to be connected -- check run.py')
             return
 
         # Helpful little printout

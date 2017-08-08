@@ -19,7 +19,7 @@ class Pinger:
     # which client you want. For Pinger, we'll check all Clients
     def execute(self, engine):
         for client in engine.clients:
-            if client.pingAttempts >= self.pingsAllowed:
+            if client.status == lib.Client.Status.ONLINE and client.pingAttempts >= self.pingsAllowed:
                 engine.log.write('Pinger.py | Client being terminated due to no PONG replies!')
                 engine.dead(client)
                 continue
