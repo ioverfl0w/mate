@@ -30,6 +30,22 @@ class Engine:
         #add a new client to our queue
         self.clients.append(Client.Client(self, profile))
 
+    def addClients(self, profiles):
+        for prof in profiles['clients']:
+            # Set globally set UMODES
+            try:
+                prof.umodes = profiles['umodes']
+            except:
+                pass
+            # Set globally set ajoin
+            try:
+                prof.ajoin = profiles['ajoin']
+            except:
+                pass
+
+            # Insert this client
+            self.addClient(prof)
+
     def dead(self, client):
         # a client has reported a dead connection,
         # we need to fix this be reconnecting
