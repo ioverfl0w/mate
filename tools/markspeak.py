@@ -5,7 +5,7 @@ import traceback
 
 source_text = './dump.dat'
 
-conn = sqlite3.connect('mark.db')
+conn = sqlite3.connect('mark2.db')
 counter = 0
 
 # Create the database
@@ -48,9 +48,9 @@ with open(source_text) as f:
             continue
 
         # Go through each word in a line, adding their attributes to our database
-        for i in range(0, len(args) - 1):
+        for i in range(0, len(args) - 2):
             if not i + 1 >= len(args):
-                insertwords(args[i], args[i + 1])
+                insertwords(args[i], args[i + 1] + ' ' + args[i + 2])
                 #print(args[i] + '\t' + args[i + 1])
                 counter += 1
 
