@@ -5,7 +5,7 @@ import traceback
 
 source_text = './dump.dat'
 
-conn = sqlite3.connect('mark2.db')
+conn = sqlite3.connect('mark-2.db')
 counter = 0
 
 # Create the database
@@ -37,6 +37,9 @@ where word=? and nextword=?;
 with open(source_text) as f:
     for line in f:
         line = line.strip()
+        if '|' in line:
+            continue
+
         args = line.split(' ')
 
         # Ignore single word messages for now
@@ -44,7 +47,7 @@ with open(source_text) as f:
             continue
 
         # Ignore what appears to be a quote
-        if args[0].startswith('<'):
+        if args[0].startswith('<') or args[0].startswith('/'):
             continue
 
         # Go through each word in a line, adding their attributes to our database

@@ -1,7 +1,5 @@
-import shelve
+import sqlite3
 
-# Directory the contains the access databases
-dir = './data/'
 # Default access scale
 LEVELS = {'OWNER': 3, 'ADMIN': 2, 'TRUSTED': 1, 'USER': 0, 'BLOCKED': -1}
 
@@ -19,6 +17,8 @@ class Access:
     def __init__(self, engine):
         # AccessClock instance
         self.clock = engine.timer.fetchTimeFunc('AccessClock')
+        # Sqlite3 database
+        self.database = sqlite3.connect('./data/access.db')
 
     def getLevel(self, level):
         return LEVELS[level.upper()]
