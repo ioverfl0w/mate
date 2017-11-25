@@ -2,6 +2,7 @@ import sqlite3
 
 # Default access scale
 LEVELS = {'OWNER': 3, 'ADMIN': 2, 'TRUSTED': 1, 'USER': 0, 'BLOCKED': -1}
+TABLE = 'MateAccess'
 
 class Access:
 
@@ -10,7 +11,7 @@ class Access:
     # Levels system per Network
     # 3 - Owner
     # 2 - Admin
-    # 1 - Trusted/Module
+    # 1 - Trusted/Mod
     # 0 - Normal user
     # -1 - Ignored/Blocked
 
@@ -18,7 +19,19 @@ class Access:
         # AccessClock instance
         self.clock = engine.timer.fetchTimeFunc('AccessClock')
         # Sqlite3 database
-        self.database = sqlite3.connect('./data/access.db')
+        self.db = sqlite3.connect('./data/access.db')
+        # Create database if not established
+        self.db.execute('''
+        create table if not exists ''' + TABLE + ''' (
+            network text,
+            nick text,
+            level integer
+        );''')
+
+        c = self.db.cursor()
+        c.execute('SELECT * FROM ' + TABLE)
+        for e in c.fetchall():
+            print(e)
 
     def getLevel(self, level):
         return LEVELS[level.upper()]
@@ -34,21 +47,15 @@ class Access:
     # Return the Level of rights for the specified user on the receiving Client
     def userRights(self, client, nick):
         nick = nick.lower()
-        db = shelve.open(dir + client.profile.network.name.lower() + '-access.db')
-        try:
-            rights = db[nick]
-        except:
-            rights = 0 # no rights
-        db.close()
-        return rights
+        cur = self.db.cursor()
+
+        cur.execute('SELECT level FROM ' + TABLE + ' WHERE network=? AND nick=?', [client.profile.network.name, nick])
+        rights = cur.fetchone()[0]
+        return rights if not rights == None else 0
 
     # Declare a level of rights for a specific user on a certain network
     def setRights(self, client, nick, level):
         nick = nick.lower()
-        db = shelve.open(dir + client.profile.network.name.lower() + '-access.db', writeback=True)
-        try:
-            db[nick] = level
-        except:
-            return False
-        db.close()
+        self.db.execute('UPDATE ' + TABLE + ' SET level=? WHERE network=? AND nick=?', [level, client.profile.network.name, nick])
+        self.db.commit()
         return True

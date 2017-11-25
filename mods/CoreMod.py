@@ -2,7 +2,7 @@ from lib import Access
 from lib import Engine
 
 # Declare our VERSION
-VERSION = 'python-ircbot v0.2b'
+VERSION = 'mate py-ircbot v0.2c'
 
 class CoreMod:
 
@@ -34,17 +34,17 @@ class CoreMod:
         if args[0].lower() == '.source' or args[0].lower() == '.bots':
             return client.msg(channel, 'mate [python] :: Source https://github.com/ioverfl0w/mate/')
 
-        if args[0].lower() == '!rights' and client.engine.access.userRights(client, user[0]) > Access.LEVELS['USER']:
-            return client.notice(user[0], 'Access level: ' + str(client.engine.access.userRights(client, user[0])) + ' - Current rights: ' + str(client.engine.access.getCurrentRights(client, user[0])))
+        if args[0].lower() == '!rights' and client.getRights(user[0]) >= Access.LEVELS['USER']:
+            return client.notice(user[0], 'Access level: ' + str(client.getRights(user[0])) + ' - Current rights: ' + str(client.activeRights(user[0])))
 
         # Admin Commands
-        if client.engine.access.getCurrentRights(client, user[0]) >= Access.LEVELS['ADMIN']:
+        if client.activeRights(user[0]) >= Access.LEVELS['ADMIN']:
             # Adjust user access
             if args[0].lower() == '!set':
                 if not len(args) == 3:
                     return client.notice(user[0], 'Syntax: !set [nick] [level]')
                 try:
-                    oLevl = client.engine.access.userRights(client, args[1])
+                    oLevl = client.getRights(args[1])
                     nLevl = int(args[2])
                     if oLevl == nLevl: # no changed
                         return client.notice(user[0], 'Access unchanged.')
@@ -61,6 +61,6 @@ class CoreMod:
 
         # Authenticate the user with the Access system, by checking if they are identified
         if message.lower() == 'auth' and \
-            client.engine.access.userRights(client, user[0]) > Access.LEVELS['USER'] and \
-            client.engine.access.getCurrentRights(client, user[0]) == Access.LEVELS['USER']:
+            client.getRights(user[0]) > Access.LEVELS['USER'] and \
+            client.activeRights(user[0]) == Access.LEVELS['USER']:
             return client.send('WHOIS :' + user[0])

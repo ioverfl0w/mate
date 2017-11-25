@@ -19,6 +19,14 @@ class Client:
         # Hook from Pinger.py timed-function
         self.pingAttempts = 0
 
+    # Return user's permission level regardless if authed
+    def getRights(self, nick):
+        return self.engine.access.userRights(self, nick)
+
+    # Return user's permissions based on if Authed
+    def activeRights(self, nick):
+        return self.engine.access.getCurrentRights(self, nick)
+
     def quit(self):
         try:
             self.send('QUIT')

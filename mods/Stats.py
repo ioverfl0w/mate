@@ -1,5 +1,5 @@
 from lib import Engine
-import shelve
+import sqlite3
 import time
 from decimal import Decimal
 
@@ -17,12 +17,27 @@ class Stats:
     def __init__(self):
         self.module = Engine.Module('Stats', ['PRIVMSG', 'JOIN', 'PART'])
 
+        # Connect to our database
+        self.db = sqlite3.connect(dir + 'stats.db')
+        # Create database if does not exist
+        self.db.execute('''
+        create table if not exists MateStats (
+            network text,
+            nick text,
+            joins integer,
+            parts integer,
+            msgs integer,
+            chars integer,
+            seen integer
+        );''')
+
     # Get the user stats for the nick in use on the Client's network
     def getStats(self, client, user, createNew=True):
         # case insensitive
         user = user.lower()
         # open the specific Network's database
-        db = shelve.open(dir + client.profile.network.name.lower() + '-stats.db', writeback=True)
+        #db = shelve.open(dir + client.profile.network.name.lower() + '-stats.db', writeback=True)
+
         try:
             res = db[user]
         except:
