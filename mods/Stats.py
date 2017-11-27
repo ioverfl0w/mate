@@ -30,6 +30,13 @@ class Stats:
             seen integer default 0
         );''')
 
+        c = self.db.cursor()
+        print('(debug) all stats:')
+        c.execute('SELECT * FROM ' + TABLE)
+        for e in c.fetchall():
+            print(e)
+        print('(debug) end all stats\n')
+
     # Get the user stats for the nick in use on the Client's network
     def getStats(self, client, user):
         # case insensitive
@@ -65,10 +72,8 @@ class Stats:
     def message(self, client, user, channel, message):
         args = message.split(' ')
 
-        # We can quickly determine if this module is either recording stats, or
-        # needs to perform a command (commands do not count towards stats)
-        if not args[0].startswith('!') and not args[0].startswith('.'):
-            return self.recordMsgStats(client, user[0], len(message))
+        # Record some stats, cuz
+        self.recordMsgStats(client, user[0], len(message))
 
         # show off your stats to the channel
         if args[0].lower() == '!me':

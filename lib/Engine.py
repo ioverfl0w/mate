@@ -196,10 +196,10 @@ class Network:
         self.password = password
 
 def timedString(seconds):
-	m = int(seconds / 60)
-	s = int(seconds - (m * 60))
-	h = 0 if m < 60 else m / 60
-	m = m if h == 0 else m - (h * 60)
-	d = 0 if h < 24 else h / 24
-	h = h if d == 0 else h - (d * 24)
-	return ('' if d == 0 else str(d) + 'd') + ('' if h == 0 else str(h) + 'h') + ('' if m == 0 else str(m) + 'm') + str(s) + 's';
+    m = int(seconds / 60)
+    s = int(seconds - (m * 60))
+    h = int(0 if m < 60 else m / 60)
+    m = int(m if h == 0 else m - (h * 60))
+    d = int(0 if h < 24 else h / 24)
+    h = int(h if d == 0 else h - (d * 24))
+    return ('' if d == 0 else str(d) + 'd') + ('' if h == 0 else str(h) + 'h') + ('' if m == 0 else str(m) + 'm') + str(s) + 's';
