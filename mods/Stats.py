@@ -44,10 +44,10 @@ class Stats:
         # case insensitive
         user = user.lower()
         cur = self.db.cursor()
-        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, ' + key + ', seen) ' + \
-            'VALUES (?,?,?,?)', [client.profile.network.name, user, 1, time.time()])
         cur.execute('UPDATE ' + TABLE + ' SET ' + key + '=' + key + '+1, seen=? ' + \
             'WHERE network=? AND nick=?', [time.time(), client.profile.network.name, user])
+        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, ' + key + ', seen) ' + \
+            'VALUES (?,?,?,?)', [client.profile.network.name, user, 1, time.time()])
         self.db.commit()
         cur.close()
 
@@ -55,10 +55,10 @@ class Stats:
     def recordMsgStats(self, client, user, size):
         user = user.lower()
         cur = self.db.cursor()
-        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, msgs, chars, seen) ' + \
-            'VALUES (?,?,?,?,?)', [client.profile.network.name, user, 1, size, time.time()])
         cur.execute('UPDATE ' + TABLE + ' SET msgs=msgs+1, chars=chars+?, seen=? ' + \
              'WHERE network=? AND nick=?', [size, time.time(), client.profile.network.name, user])
+        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, msgs, chars, seen) ' + \
+            'VALUES (?,?,?,?,?)', [client.profile.network.name, user, 1, size, time.time()])
         self.db.commit()
         cur.close()
 
