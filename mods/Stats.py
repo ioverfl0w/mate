@@ -3,9 +3,8 @@ import sqlite3
 import time
 from decimal import Decimal
 
-# new user format: joins, parts, messages, characters, time last seen
-new_user = {'j': 0, 'p': 0, 'm': 0, 'c': 0, 's': 0}
 dir = './data/'
+TABLE = 'MateStats'
 
 class Stats:
 
@@ -21,67 +20,47 @@ class Stats:
         self.db = sqlite3.connect(dir + 'stats.db')
         # Create database if does not exist
         self.db.execute('''
-        create table if not exists MateStats (
+        create table if not exists ''' + TABLE + ''' (
             network text,
-            nick text,
-            joins integer,
-            parts integer,
-            msgs integer,
-            chars integer,
-            seen integer
+            nick text UNIQUE,
+            joins integer default 0,
+            parts integer default 0,
+            msgs integer default 0,
+            chars integer default 0,
+            seen integer default 0
         );''')
 
     # Get the user stats for the nick in use on the Client's network
-    def getStats(self, client, user, createNew=True):
+    def getStats(self, client, user):
         # case insensitive
         user = user.lower()
-        # open the specific Network's database
-        #db = shelve.open(dir + client.profile.network.name.lower() + '-stats.db', writeback=True)
-
-        try:
-            res = db[user]
-        except:
-            if createNew:
-                #new user we want to create
-                db[user] = new_user
-                db[user]['s'] = time.time()
-                res = db[user]
-            else:
-                #we're just checking, but dont want to create a user
-                return None
-        finally:
-            db.close()
-        return res
+        cur = self.db.cursor()
+        cur.execute('SELECT * FROM ' + TABLE + ' WHERE network=? AND nick=?', [client.profile.network.name, user])
+        return cur.fetchone()
 
     # Record user stats in client's server database for username
     # Key should be the value to be altered by +1
     def recordStats(self, client, user, key):
         # case insensitive
         user = user.lower()
-        # open the Network database
-        db = shelve.open(dir + client.profile.network.name.lower() + '-stats.db', writeback=True)
-        try:
-            db[user][key] += 1
-            db[user]['s'] = time.time()
-        except:
-            db[user] = new_user
-            client.engine.log.write('Error while writing ' + key + ' stats, assuming new user (' + user + ')')
-        finally:
-            db.close()
+        cur = self.db.cursor()
+        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, ' + key + ', seen) ' + \
+            'VALUES (?,?,?,?)', [client.profile.network.name, user, 1, time.time()])
+        cur.execute('UPDATE ' + TABLE + ' SET ' + key + '=' + key + '+1, seen=? ' + \
+            'WHERE network=? AND nick=?', [time.time(), client.profile.network.name, user])
+        self.db.commit()
+        cur.close()
 
     # Similar to recordStats(..) but we are changing two values
     def recordMsgStats(self, client, user, size):
         user = user.lower()
-        db = shelve.open(dir + client.profile.network.name.lower() + '-stats.db', writeback=True)
-        try:
-            db[user]['m'] += 1
-            db[user]['c'] += size
-            db[user]['s'] = time.time()
-        except:
-            db[user] = new_user
-            client.engine.log.write('Error while writing message stats, assuming new user (' + user + ')')
-        finally:
-            db.close()
+        cur = self.db.cursor()
+        cur.execute('INSERT OR IGNORE INTO ' + TABLE + ' (network, nick, msgs, chars, seen) ' + \
+            'VALUES (?,?,?,?,?)', [client.profile.network.name, user, 1, size, time.time()])
+        cur.execute('UPDATE ' + TABLE + ' SET msgs=msgs+1, chars=chars+?, seen=? ' + \
+             'WHERE network=? AND nick=?', [size, time.time(), client.profile.network.name, user])
+        self.db.commit()
+        cur.close()
 
     def message(self, client, user, channel, message):
         args = message.split(' ')
@@ -95,11 +74,11 @@ class Stats:
         if args[0].lower() == '!me':
             usr = self.getStats(client, user[0])
             try:
-                return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
-                    '\0033Joins:\003 ' + str(usr['j']) + ' \0033Parts:\003 ' + \
-                    str(usr['p']) + ' \0033Messages:\003 ' + str(usr['m']) + \
-                    ' \0033Characters:\003 ' + str(usr['c']) + ' \0033Avg CPM:\003 ' + \
-                    str(round(Decimal(usr['c']) / Decimal(usr['m']), 2)) )
+                return client.msg(channel, '\0032(Stats) \003' + user[1] + ' - ' + \
+                    '\0033Joins:\003 ' + str(usr[2]) + ' \0033Parts:\003 ' + \
+                    str(usr[3]) + ' \0033Messages:\003 ' + str(usr[4]) + \
+                    ' \0033Characters:\003 ' + str(usr[5]) + ' \0033Avg CPM:\003 ' + \
+                    str(round(Decimal(usr[5]) / Decimal(usr[4]), 2)) )
             except:
                 # Users not registered (no stats recorded) will cause an error
                 return client.msg(channel, '\0034Error\003 unable to recall stats for ' + user[0])
@@ -111,16 +90,16 @@ class Stats:
                 return client.notice(user[0], 'Syntax: !seen [nick]')
             if args[1].lower() == user[0].lower():
                 return client.msg(channel, 'Looking for yourself, ' + user[0] + '?')
-            usr = self.getStats(client, args[1], createNew=False)
+            usr = self.getStats(client, args[1])
             if usr == None: #no user to report
                 return client.msg(channel, user[0] + ', I don\'t know who ' + args[1] + ' is.')
             else:
-                return client.msg(channel, user[0] + ', ' + args[1] + ' was last seen ' + Engine.timedString((time.time() - usr['s'])) + ' ago.')
+                return client.msg(channel, user[0] + ', ' + args[1] + ' was last seen ' + Engine.timedString((time.time() - usr[6])) + ' ago.')
 
     def join(self, client, user, location):
         # Record this user a join
-        self.recordStats(client, user[0], 'j')
+        self.recordStats(client, user[0], 'joins')
 
     def part(self, client, user):
         # Record this user a part
-        self.recordStats(client, user[0], 'p')
+        self.recordStats(client, user[0], 'parts')

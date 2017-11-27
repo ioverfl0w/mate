@@ -28,11 +28,6 @@ class Access:
             level integer
         );''')
 
-        c = self.db.cursor()
-        c.execute('SELECT * FROM ' + TABLE)
-        for e in c.fetchall():
-            print(e)
-
     def getLevel(self, level):
         return LEVELS[level.upper()]
 
