@@ -74,7 +74,7 @@ class Stats:
         if args[0].lower() == '!me':
             usr = self.getStats(client, user[0])
             try:
-                return client.msg(channel, '\0032(Stats) \003' + user[1] + ' - ' + \
+                return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
                     '\0033Joins:\003 ' + str(usr[2]) + ' \0033Parts:\003 ' + \
                     str(usr[3]) + ' \0033Messages:\003 ' + str(usr[4]) + \
                     ' \0033Characters:\003 ' + str(usr[5]) + ' \0033Avg CPM:\003 ' + \
