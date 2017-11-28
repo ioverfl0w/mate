@@ -30,13 +30,6 @@ class Stats:
             seen integer default 0
         );''')
 
-        c = self.db.cursor()
-        print('(debug) all stats:')
-        c.execute('SELECT * FROM ' + TABLE)
-        for e in c.fetchall():
-            print(e)
-        print('(debug) end all stats\n')
-
     # Get the user stats for the nick in use on the Client's network
     def getStats(self, client, user):
         # case insensitive
