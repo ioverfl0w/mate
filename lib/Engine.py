@@ -13,6 +13,8 @@ class Engine:
     # attempt to reconnect disconnected bots (TODO add 'halted' option)
 
     def __init__(self, DEBUG=0):
+        # Debug MODE
+        self.debug = False if DEBUG == 0 else True
         # our clients
         self.clients = []
         # start a log
@@ -23,8 +25,6 @@ class Engine:
         self.timer = Timer.TimeKeeper(self)
         # start an Access system (must load after Timer)
         self.access = Access.Access(self)
-        # Debug MODE
-        self.debug = False if DEBUG == 0 else True
 
     def addClient(self, profile):
         #add a new client to our queue
@@ -46,10 +46,16 @@ class Engine:
             # Insert this client
             self.addClient(prof)
 
+    def getClient(self, profile):
+        for client in self.clients:
+            if client.profile == profile:
+                return client
+        return None
+
     def dead(self, client):
         # a client has reported a dead connection,
         # we need to fix this be reconnecting
-        self.log.write('! client reported dead !')
+        self.log.write('! client reported dead ! ' + str(client))
         client.status = Client.Status.OFFLINE
         pass
 
@@ -67,6 +73,7 @@ class Engine:
                             e.profile.network.address + ':' + ('+' if e.profile.network.ssl else '') + str(e.profile.network.port) + ' ...')
                 e.connect() #build the socket layers
                 e.identify() # communicate with the server and log in
+                time.sleep(1)
                 continue
 
             # we are expecting something
@@ -90,7 +97,7 @@ class Engine:
                     return
 
                 # A healthy client, check for module triggers
-                if e.status == Client.Status.ONLINE:
+                if e.status == Client.Status.ONLINE and len(args) > 1:
                     if args[1] == 'PRIVMSG':
                         self.event.message(e, packet, args)
                     elif args[1] == 'NOTICE':
@@ -108,12 +115,16 @@ class Engine:
                         e.pingAttempts = 0
                     elif args[1] == 'NICK':
                         self.event.nick(e, args)
+                    elif args[1] == 'QUIT':
+                        self.event.quit(e, args)
+                    # (Relay Hook) Checks for NAMELIST responses
+                    elif args[1] == '352':
+                        self.event.namelist(e, packet, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
                     elif args[1] == '307':
                         self.access.auth(e, args[3])
-                    else:
-                        if self.debug:
-                            self.log.write('(unhandled) ' + packet)
+                    if self.debug:
+                        self.log.write('(packet) ' + packet)
 
                 # A client still CONNECTING
                 if e.status == Client.Status.CONNECTING:
@@ -169,31 +180,33 @@ class Engine:
 class Module:
     # Module profile
     # Module name, [types], active
-    def __init__(self, name, types, active=True):
-        self.name = name
-        self.types = types if type(types) is list else [types]
-        self.active = active
+    def __init__(self, name, types, clients=None, active=True):
+        self.name = name #the module name
+        self.types = types if type(types) is list else [types] #either a single Type string to array of strings
+        self.clients = clients if type(clients) is list or clients == None else [clients] # Specify which client(s) use this module
+        self.active = active #module status (active or dormant)
 
 class Profile:
     # Client profile
     # Nick name, Network (see below), NickServ Password (optional)
     def __init__(self, nick, network, nspw=None):
-        self.nick = nick
-        self.network = network
-        self.nickserv = nspw
-        self.umodes = None
-        self.ajoin = None
+        self.nick = nick #current nick on network
+        self.set_nick = nick #nick we want to be
+        self.network = network #network associated with the profile
+        self.nickserv = nspw #our nickserv ident password
+        self.umodes = None #the umodes set upon connect
+        self.ajoin = None #autojoin channels
 
 class Network:
 
     # Network profile
     # Address (IP), port, ssl enabled, server password
     def __init__(self, name, address, port=6667, ssl=False, password=None):
-        self.name = name
-        self.address = address
-        self.port = port
-        self.ssl = ssl
-        self.password = password
+        self.name = name #network name (case sensitive)
+        self.address = address #network address
+        self.port = port #network port
+        self.ssl = ssl #use SSL protocols
+        self.password = password #server password
 
 def timedString(seconds):
     m = int(seconds / 60)

@@ -28,6 +28,13 @@ class Access:
             level integer
         );''')
 
+        if engine.debug:
+            cur = self.db.cursor()
+            cur.execute('SELECT * FROM ' + TABLE)
+            for e in cur.fetchall():
+                engine.log.write('(Access List) ' + str(e))
+            cur.close()
+
     def getLevel(self, level):
         return LEVELS[level.upper()]
 
