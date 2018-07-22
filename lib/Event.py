@@ -19,39 +19,61 @@ class Event:
         user = self.getUser(args[0])
         message = packet[packet[1:].index(' :') + 3:]
         for mod in self.getMods('PRIVMSG'):
-            mod.message(client, user, args[2] if args[2].startswith('#') else user[0], message)
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.message(client, user, args[2] if args[2].startswith('#') else user[0], message)
 
     def notice(self, client, packet, args):
         user = self.getUser(args[0])
         message = packet[packet[1:].index(' :') + 3:]
         for mod in self.getMods('NOTICE'):
-            mod.notice(client, user, args[2], message)
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.notice(client, user, args[2], message)
 
     def join(self, client, args):
         user = self.getUser(args[0])
         for mod in self.getMods('JOIN'):
-            mod.join(client, user, args[2][1:])
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.join(client, user, args[2][1:])
 
     def kick(self, client, packet, args):
+        print(packet)
         user = self.getUser(args[0])
         try:
             message = packet[packet.index(args[4]) + 1:]
         except:
             message = None
         for mod in self.getMods('KICK'):
-            mod.kick(client, args[2], user, args[3], message)
+            if mod.module.clients == None or client in mod.module.clients:
+                # [0] client, [1] user(kicker), [2] location, [3] kicked, [4+] msg
+                mod.kick(client, user, args[2], args[3], message)
 
     def part(self, client, packet, args):
         user = self.getUser(args[0])
         # TODO - fix the message argument for parts
         #message = packet[packet.index(args[3]) + 1:]
         for mod in self.getMods('PART'):
-            mod.part(client, user)
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.part(client, user, args[2])
 
     def nick(self, client, args):
         oldNick = self.getUser(args[0])
         for mod in self.getMods('NICK'):
-            mod.nick(client, oldNick, args[2][1:])
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.nick(client, oldNick, args[2][1:] if args[2].startswith(':') else args[2])
+
+    def quit(self, client, args):
+        user = self.getUser(args[0])
+        for mod in self.getMods('QUIT'):
+            if mod.module.clients == None or client in mod.module.clients:
+                ## TODO:
+                # Maybe we should pass on the messages (known to break sometimes)
+                mod.quit(client, user)
+
+    def namelist(self, client, packet, args):
+        for mod in self.getMods('NAMELIST'):
+            if mod.module.clients == None or client in mod.module.clients:
+                #Location, User
+                mod.namelist(client, args[3], [args[7],args[4], args[5]])
 
     # We are going to join any channel we are invited to
     def invite(self, client, location):

@@ -15,11 +15,14 @@ class Hilight:
     # Maintains short message buffer for each channel, and pushes
     # Hilight events to them when they are next active.
     #
+    # TODO - convert database from shelves to sql
+    #
     # TODO - better track users between being checked out and being waited on
     # Right now they are all in one list in local memory, maybe splitting later
     # if ever scaled larger
     #
     # TODO - change from Paste.ee to something else that does not require an API key
+    # Maybe just throttle paste it to a PM
 
     def __init__(self, apikey):
         self.module = lib.Engine.Module('Hilight', 'PRIVMSG')
@@ -56,9 +59,11 @@ class Hilight:
             if args[2].lower() == 'confirm':
                 try:
                     dur = int(args[1])
+                    if dur <= 0:
+                        return client.notice(user[0], 'Duration must be greater than 0.')
                     if self.optin(client, user[0], dur):
                         self.hlsync(upload=True) #upload our database with shelve
-                        return client.notice(user[0], 'Duration period changed to ' + args[1] + ' minutes.')
+                        return client.notice(user[0], 'Duration period set to ' + args[1] + ' minute' + ('s' if dur == 1 else '') + '.')
                     return client.notice(user[0], 'Duration period not changed.')
                 except:
                     client.notice(user[0], 'The duration should be the number of minutes you should be AFK before declared away.')
@@ -90,7 +95,7 @@ class Hilight:
                 c += 1
 
             #if no events, stop now
-            if len(events) == 0:
+            if len(self.events) == 0:
                 return
 
             #convert all events into pastebin format_exc
@@ -253,7 +258,7 @@ def pastee(key, desc, txt):
 	r = None
 
 	try:
-		r = requests.post('http://paste.ee/api',data=post_param, verify=False) # Post the params to Pastee API and get the url
+		r = requests.post('http://paste.ee/api',json=post_param, verify=False) # Post the params to Pastee API and get the url
 	except requests.ConnectionError as e:
 		print('Connection Error')
 

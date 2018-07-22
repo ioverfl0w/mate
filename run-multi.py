@@ -10,7 +10,7 @@ engine = Engine.Engine(0)
 
 # Rizon Network
 # lib.Engine.Network(address, port, sslEnabled, servPassword)
-rizon = Engine.Network('Rizon', 'sli.rizon.net', 6667)
+rizon = Engine.Network('Rizon', 'sli.rizon.net', 6697, True)
 
 # Client Profiles
 # Testing different options for multiple client loading easily
@@ -36,7 +36,7 @@ engine.addClient(freenode) # insert our single Freenode client
 
 # Load our modules
 engine.event.loadMod(Hilight.Hilight('paste.ee-api-key-here'))
-engine.event.loadMod(Stats.Stats())
+engine.event.loadMod(Stats.Stats(main))
 
 # Start the Engine
 engine.execute()

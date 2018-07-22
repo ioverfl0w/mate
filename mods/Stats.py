@@ -13,8 +13,8 @@ class Stats:
     # Record numerical stats for users. Module is stand-alone, meaning you can
     # disable this module and nothing else will break.
 
-    def __init__(self):
-        self.module = Engine.Module('Stats', ['PRIVMSG', 'JOIN', 'PART'])
+    def __init__(self, clients):
+        self.module = Engine.Module('Stats', ['PRIVMSG', 'JOIN', 'PART'], clients=clients)
 
         # Connect to our database
         self.db = sqlite3.connect(dir + 'stats.db')
@@ -98,6 +98,6 @@ class Stats:
         # Record this user a join
         self.recordStats(client, user[0], 'joins')
 
-    def part(self, client, user):
+    def part(self, client, user, location):
         # Record this user a part
         self.recordStats(client, user[0], 'parts')

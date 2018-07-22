@@ -2,6 +2,7 @@ from lib import Engine
 from random import choice
 from random import randint
 import sqlite3
+import time
 
 # the table in our sqlite3 database
 table = 'MarkSpeak'
@@ -11,6 +12,8 @@ max_words = 15
 min_words = 6
 # Words that cannot end a sentence
 CONT_WORDS = ['the', 'of', 'and', 'or', 'but', 'for']
+# Hilight response delay (in seconds)
+RESPONSE_DELAY = 3
 
 class MarkSpeak:
 
@@ -20,16 +23,21 @@ class MarkSpeak:
     # TODO - record new words from active chat
     # TODO - make this less shit, its awful. and I hate looking at it
 
-    def __init__(self):
-        self.module = Engine.Module('MarkSpeak', 'PRIVMSG')
+    def __init__(self, clients):
+        self.module = Engine.Module('MarkSpeak', 'PRIVMSG', clients=clients)
         # our database
         self.database = sqlite3.connect('./data/mark-3.db')
+        #last hilight response
+        self.last_hilight = 0
 
     def message(self, client, user, channel, message):
         if not channel.startswith('#'):
             return
 
         args = message.split(' ')
+
+        #if args [0].lower() == client.profile.nick.lower() and time.time() > self.last_hilight + RESPONSE_DELAY * 1000:
+
 
         if args[0].lower() == '.talk':
             if len(args) > 2 and args[1].lower() == 'about':

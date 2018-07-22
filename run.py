@@ -26,8 +26,8 @@ engine.addClient(token)
 
 # Load our modules
 #engine.event.loadMod(Hilight.Hilight('paste.ee-api-key-here'))
-#engine.event.loadMod(MarkSpeak.MarkSpeak())
-engine.event.loadMod(Stats.Stats())
+engine.event.loadMod(MarkSpeak.MarkSpeak(token))
+engine.event.loadMod(Stats.Stats(token))
 
 # Start the Engine
 engine.execute()
