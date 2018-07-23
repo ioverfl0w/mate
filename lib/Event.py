@@ -55,6 +55,13 @@ class Event:
             if mod.module.clients == None or client in mod.module.clients:
                 mod.part(client, user, args[2])
 
+    def mode(self, client, packet, args):
+        user = self.getUser(args[0])
+        for mod in self.getMods('MODE'):
+            if mod.module.clients == None or client in mod.module.clients:
+                mod.mode(client, user, args[2],
+                (packet[packet.index(args[2]) + len(args[2]) + 1:] if len(args) > 3 else ''))
+
     def nick(self, client, args):
         oldNick = self.getUser(args[0])
         for mod in self.getMods('NICK'):

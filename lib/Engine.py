@@ -117,12 +117,15 @@ class Engine:
                         self.event.nick(e, args)
                     elif args[1] == 'QUIT':
                         self.event.quit(e, args)
+                    elif args[1] == 'MODE':
+                        self.event.mode(e, packet, args)
                     # (Relay Hook) Checks for NAMELIST responses
                     elif args[1] == '352':
                         self.event.namelist(e, packet, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
                     elif args[1] == '307':
                         self.access.auth(e, args[3])
+
                     if self.debug:
                         self.log.write('(packet) ' + packet)
 

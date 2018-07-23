@@ -16,7 +16,7 @@ class Relay:
 
     def __init__(self, clients):
         # TODO
-        # handle: MODE, PMs, Admin Commands, Disconnected messages with cooldown
+        # handle: Admin Commands, Disconnected messages with cooldown
         # PART messages having issues registering as relayed on certain networks, need to diagnose
         self.module = Engine.Module('Relay', ['PRIVMSG', 'JOIN', 'PART', 'KICK', 'NICK', 'QUIT', 'MODE', 'NAMELIST'], clients=clients)
         self.links = []
@@ -36,19 +36,67 @@ class Relay:
             if not link['client'] == host:
                 link['client'].msg(link['location'], content)
 
+    # Send private messages across networks and clients linked
+    # # TODO:
+    # - Specify which Network or Client that the true recipient is in the case of duplicates
+    # - Specify a target for a duration of time, to eliminate starting messages with nick
+    def sendPriv(self, hostClient, sender, recipient, message):
+        recipient = recipient.lower()
+        sent = 0
+        for i in range(0, len(self.links)):
+            if not self.links[i]['client'] == hostClient:
+                # Because the recipient value is user provided, we will check case insensitive
+                for x in range(0, len(self.links[i]['nicks'])):
+                    if self.links[i]['nicks'][x].lower() == recipient:
+                        c = self.getColor(self.links[i]['client'], self.links[i]['location'])
+                        self.links[i]['client'].msg(recipient, '[\003' + c + sender + '\003] ' + message)
+                        sent += 1
+        return sent
+
     def message(self, client, user, channel, message):
+        # Admin commands
+        # # TODO:
+        # !ban
+        # !kick
+        if (self.isRelayed(client, channel)):
+            pass
+
         # Handle private messages
         # # TODO:
         # Allow for PMing accross network without having to Specify
         # the target with each message
         if (channel == user[0]):
+            args = message.split(' ')
+
+            # Ensure we only accept commands from users within the client's channels
+            if not self.userInChannel(client, user[0]):
+                return print('(Relay) Notice: external message received from ' + user[0] + ' [' + message + ']')
+
+            # List users in linked channels
             if (message.lower() == 'list'):
                 for n in self.links:
                     ## TODO:
                     # Better check against this. Could be relaying channels on a single network
                     if not n['client'] == client:
-                        client.notice(user[0], '\003' + self.getColor(n['client'], n['location']) +
-                            'Current users in ' + n['location'] + '@' + n['client'].profile.network.name + ': ' + (', '.join(n['nicks'])))
+                        c = self.getColor(n['client'], n['location'])
+                        client.notice(user[0], '\00303' + str(len(n['nicks'])) + ' User'
+                            + ('' if len(n['nicks']) == 1 else 's') + ' in \003' + c + n['location'] + '\003 '
+                            + '(\003' + c + 'via ' + n['client'].profile.network.name + '\003): \003' + c
+                            + (('\003, \003' + c).join(n['nicks'])))
+                return
+
+            # Check if this message is a Private Message
+            if (len(args) > 1):
+                message = message[(len(args[0]) + 1):]
+                sent = self.sendPriv(client, user[0], args[0], message)
+                if sent > 1:
+                    return client.notice(user[0], 'Notice: your message had ' + str(sent) + ' recipient' + ('' if sent == 1 else 's')
+                        + ' due to same nicks across linked channels.')
+                if sent == 0:
+                    client.notice(user[0], 'Error: user \'' + args[0] + '\' not found across Relay network.')
+                return
+
+            return client.notice(user[0], 'Send \'list\' to get list of online users. Start a message with a connected nick followed by a message to send a PM.')
 
         if (self.isRelayed(client, channel)):
             self.relay(client, self.constructHeading(client, channel, user[0]) + message)
@@ -65,7 +113,6 @@ class Relay:
 
     def part(self, client, user, location):
         if (self.isRelayed(client, location)):
-            print('trigger part ' + location)
             self.remUserFromChannel(client, location, user[0])
             self.relay(client, self.constructHeading(client, location, user[0], part_msg_color) + ' has left ' + location)
 
@@ -76,8 +123,11 @@ class Relay:
                 kick_msg_color + ' from ' + location)
             self.remUserFromChannel(client, location, kicked)
 
+    def mode(self, client, user, location, modes):
+        if (self.isRelayed(client, location)):
+            self.relay(client, self.constructHeading(client, location, user[0], nick_msg_color) + ' set mode: ' + location + ' ' + modes)
+
     def quit(self, client, user):
-        print(user)
         for i in range(0, len(self.links)):
             if self.links[i]['client'] == client:
                 if user[0] in self.links[i]['nicks']:
@@ -100,6 +150,11 @@ class Relay:
         if (self.isRelayed(client, location)):
             self.addUserToChannel(client, location, user[0])
 
+    def userInChannel(self, client, user):
+        for i in range(0, len(self.links)):
+            if self.links[i]['client'] == client:
+                return user in self.links[i]['nicks']
+
     def addUserToChannel(self, client, location, user):
         for i in range(0, len(self.links)):
             if self.links[i]['client'] == client and self.links[i]['location'] == location:
@@ -118,6 +173,7 @@ class Relay:
         n = '\003' + self.getColor(client, location) + nick + '\003'
         return '[' + n + '] ' if not action else '\003' + action + '* ' + n + '\003' + action
 
+    # Each link gets a unique color
     def getColor(self, client, location):
         for i in range(0, len(self.links)):
             if self.links[i]['client'] == client and self.links[i]['location'] == location:
