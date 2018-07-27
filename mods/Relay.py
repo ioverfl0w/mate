@@ -1,3 +1,4 @@
+from lib import Access
 from lib import Engine
 
 # Colors to distinguish user names to their respective location
@@ -59,7 +60,21 @@ class Relay:
         # !ban
         # !kick
         if (self.isRelayed(client, channel)):
-            pass
+            #Handle commands only here
+            if not message.startswith('!'):
+                pass
+
+            args = message.lower().split(' ')
+            if (args[0] == '!k' or args[0] == '!kick') and client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
+                if not len(args) == 3:
+                    return client.notice(user[0], 'Syntax: !k[ick] network user')
+                for link in self.links:
+                    if link['client'].profile.network.name.lower() == args[1]:
+                        for n in range(0, len(link['nicks'])):
+                            if args[2] == link['nicks'][n].lower():
+                                return link['client'].kick(link['location'], args[2], 'Kicked by ' + user[0] + ' via ' + client.profile.network.name)
+                        return client.notice(user[0], 'That user was not found on ' + link['client'].profile.network.name)
+                return client.notice(user[0], 'Network not found, check LIST (/msg ' + client.profile.nick + ' list) for Network names.')
 
         # Handle private messages
         # # TODO:

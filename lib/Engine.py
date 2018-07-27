@@ -123,7 +123,7 @@ class Engine:
                     elif args[1] == '352':
                         self.event.namelist(e, packet, args)
                     # (CoreMod Hook) Returning an identified user response from WHOIS
-                    elif args[1] == '307':
+                    elif args[1] == '307' or args[1] == '330':# Rizon uses 307, MITB uses 330
                         self.access.auth(e, args[3])
 
                     if self.debug:

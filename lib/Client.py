@@ -69,6 +69,9 @@ class Client:
     def join(self, channel):
         self.send('JOIN ' + channel)
 
+    def kick(self, channel, target, reason='Goodbye'):
+        self.send('KICK ' + channel + ' ' + target + ' :' + reason)
+
     def send(self, content):
         try:
             self.sock.send(bytes(content + '\r\n', 'utf-8'))

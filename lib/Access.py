@@ -52,7 +52,10 @@ class Access:
         cur = self.db.cursor()
 
         cur.execute('SELECT level FROM ' + TABLE + ' WHERE network=? AND nick=?', [client.profile.network.name, nick])
-        rights = cur.fetchone()[0]
+        try:
+            rights = cur.fetchone()[0]
+        except:
+            rights = None
         return rights if not rights == None else 0
 
     # Declare a level of rights for a specific user on a certain network

@@ -40,6 +40,8 @@ class CoreMod:
         # Admin Commands
         if client.activeRights(user[0]) >= Access.LEVELS['ADMIN']:
             # Adjust user access
+            # # TODO:
+            # Add support to add users to different networks (owner only?)
             if args[0].lower() == '!set':
                 if not len(args) == 3:
                     return client.notice(user[0], 'Syntax: !set [nick] [level]')
