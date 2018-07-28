@@ -17,7 +17,7 @@ class Relay:
 
     def __init__(self, clients):
         # TODO
-        # handle: Admin Commands, Disconnected messages with cooldown
+        # handle: Disconnected messages with cooldown
         # PART messages having issues registering as relayed on certain networks, need to diagnose
         self.module = Engine.Module('Relay', ['PRIVMSG', 'JOIN', 'PART', 'KICK', 'NICK', 'QUIT', 'MODE', 'NAMELIST'], clients=clients)
         self.links = []
@@ -65,16 +65,22 @@ class Relay:
                 pass
 
             args = message.lower().split(' ')
-            if (args[0] == '!k' or args[0] == '!kick') and client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
+
+            if args[0] == '!cmd' and client.getRights(user[0]) > Access.LEVELS['USER']:
+                client.notice(user[0], 'Relay Commands: !ban !kick !list -- PM \'list\'')
+
+            elif args[0] == '!list':
+                self.sendList(client, user)
+
+            elif (args[0] == '!k' or args[0] == '!kick') and client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
                 if not len(args) == 3:
-                    return client.notice(user[0], 'Syntax: !k[ick] network user')
-                for link in self.links:
-                    if link['client'].profile.network.name.lower() == args[1]:
-                        for n in range(0, len(link['nicks'])):
-                            if args[2] == link['nicks'][n].lower():
-                                return link['client'].kick(link['location'], args[2], 'Kicked by ' + user[0] + ' via ' + client.profile.network.name)
-                        return client.notice(user[0], 'That user was not found on ' + link['client'].profile.network.name)
-                return client.notice(user[0], 'Network not found, check LIST (/msg ' + client.profile.nick + ' list) for Network names.')
+                    client.notice(user[0], 'Syntax: !k[ick] network user')
+                self.kickUser(client, user, args)
+
+            elif (args[0] == '!b' or args[0] == '!ban') and client.activeRights(user[0]) >= Access.LEVELS['ADMIN']:
+                if not len(args) == 3:
+                    client.notice(user[0], 'Syntax: !b[an] network user')
+                self.kickUser(client, user, args, ban=True)
 
         # Handle private messages
         # # TODO:
@@ -89,16 +95,7 @@ class Relay:
 
             # List users in linked channels
             if (message.lower() == 'list'):
-                for n in self.links:
-                    ## TODO:
-                    # Better check against this. Could be relaying channels on a single network
-                    if not n['client'] == client:
-                        c = self.getColor(n['client'], n['location'])
-                        client.notice(user[0], '\00303' + str(len(n['nicks'])) + ' User'
-                            + ('' if len(n['nicks']) == 1 else 's') + ' in \003' + c + n['location'] + '\003 '
-                            + '(\003' + c + 'via ' + n['client'].profile.network.name + '\003): \003' + c
-                            + (('\003, \003' + c).join(n['nicks'])))
-                return
+                return self.sendList(client, user)
 
             # Check if this message is a Private Message
             if (len(args) > 1):
@@ -118,6 +115,26 @@ class Relay:
 
     def notice(self, client, user, location, message):
         pass
+
+    def kickUser(self, client, user, args, ban=False):
+        for link in self.links:
+            if link['client'].profile.network.name.lower() == args[1]:
+                for n in range(0, len(link['nicks'])):
+                    if args[2] == link['nicks'][n].lower():
+                        return link['client'].kick(link['location'], args[2], 'Kicked by ' + user[0] + ' via ' + client.profile.network.name, ban=ban)
+                return client.notice(user[0], 'That user was not found on ' + link['client'].profile.network.name)
+        return client.notice(user[0], 'Network not found, check LIST (/msg ' + client.profile.nick + ' list) for Network names.')
+
+    def sendList(self, client, user):
+        for n in self.links:
+            ## TODO:
+            # Better check against this. Could be relaying channels on a single network
+            if not n['client'] == client:
+                c = self.getColor(n['client'], n['location'])
+                client.notice(user[0], '\00303' + str(len(n['nicks'])) + ' User'
+                    + ('' if len(n['nicks']) == 1 else 's') + ' in \003' + c + n['location'] + '\003 '
+                    + '(\003' + c + 'via ' + n['client'].profile.network.name + '\003): \003' + c
+                    + (('\003, \003' + c).join(n['nicks'])))
 
     def join(self, client, user, location):
         if (client.profile.nick == user[0]):

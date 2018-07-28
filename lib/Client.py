@@ -69,7 +69,11 @@ class Client:
     def join(self, channel):
         self.send('JOIN ' + channel)
 
-    def kick(self, channel, target, reason='Goodbye'):
+    def kick(self, channel, target, reason='Goodbye', ban=False):
+        if ban:
+            ## TODO:
+            # ban better with host names
+            self.send('MODE ' + channel + ' +b ' + target + '!*@*')
         self.send('KICK ' + channel + ' ' + target + ' :' + reason)
 
     def send(self, content):
