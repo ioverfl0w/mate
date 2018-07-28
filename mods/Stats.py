@@ -13,7 +13,7 @@ class Stats:
     # Record numerical stats for users. Module is stand-alone, meaning you can
     # disable this module and nothing else will break.
 
-    def __init__(self, clients):
+    def __init__(self, clients=None):
         self.module = Engine.Module('Stats', ['PRIVMSG', 'JOIN', 'PART'], clients=clients)
 
         # Connect to our database

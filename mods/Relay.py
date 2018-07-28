@@ -15,7 +15,7 @@ class Relay:
     # This module is used to link multiple channels together through relaying of all messages
     # It also supports PMing through the use of this module (user -> bot -> recipient)
 
-    def __init__(self, clients):
+    def __init__(self, clients=None):
         # TODO
         # handle: Disconnected messages with cooldown
         # PART messages having issues registering as relayed on certain networks, need to diagnose
@@ -55,10 +55,7 @@ class Relay:
         return sent
 
     def message(self, client, user, channel, message):
-        # Admin commands
-        # # TODO:
-        # !ban
-        # !kick
+        # Commands
         if (self.isRelayed(client, channel)):
             #Handle commands only here
             if not message.startswith('!'):
@@ -66,21 +63,33 @@ class Relay:
 
             args = message.lower().split(' ')
 
-            if args[0] == '!cmd' and client.getRights(user[0]) > Access.LEVELS['USER']:
-                client.notice(user[0], 'Relay Commands: !ban !kick !list -- PM \'list\'')
+            if args[0] == '!cmd':
+                client.notice(user[0], 'Relay Commands: (public )!list -- (PM) \'list\''
+                    + ('' if client.getRights(user[0]) > Access.LEVELS['USER'] else ' -- (Admin public) !k[ick] !b[an]'))
 
             elif args[0] == '!list':
                 self.sendList(client, user)
 
+            # Trusted users
             elif (args[0] == '!k' or args[0] == '!kick') and client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
                 if not len(args) == 3:
                     client.notice(user[0], 'Syntax: !k[ick] network user')
-                self.kickUser(client, user, args)
+                else:
+                    self.kickUser(client, user, args)
 
+            # Admin users
             elif (args[0] == '!b' or args[0] == '!ban') and client.activeRights(user[0]) >= Access.LEVELS['ADMIN']:
                 if not len(args) == 3:
                     client.notice(user[0], 'Syntax: !b[an] network user')
-                self.kickUser(client, user, args, ban=True)
+                else:
+                    self.kickUser(client, user, args, ban=True)
+
+    # Public messages inside a Relayed channel are streamed
+        if (self.isRelayed(client, channel)):
+            # Check for /me
+            if message.startswith('\001ACTION'):
+                return self.relay(client, self.constructHeading(client, channel, user[0], '\003') + ' ' + message[8:len(message) - 1])
+            return self.relay(client, self.constructHeading(client, channel, user[0]) + message)
 
         # Handle private messages
         # # TODO:
@@ -109,9 +118,6 @@ class Relay:
                 return
 
             return client.notice(user[0], 'Send \'list\' to get list of online users. Start a message with a connected nick followed by a message to send a PM.')
-
-        if (self.isRelayed(client, channel)):
-            self.relay(client, self.constructHeading(client, channel, user[0]) + message)
 
     def notice(self, client, user, location, message):
         pass
