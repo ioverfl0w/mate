@@ -65,7 +65,7 @@ class Relay:
 
             if args[0] == '!cmd':
                 client.notice(user[0], 'Relay Commands: (public )!list -- (PM) \'list\''
-                    + ('' if client.getRights(user[0]) > Access.LEVELS['USER'] else ' -- (Admin public) !k[ick] !b[an]'))
+                    + (' -- (Admin public) !k[ick] !b[an]' if client.getRights(user[0]) > Access.LEVELS['USER'] else ''))
 
             elif args[0] == '!list':
                 self.sendList(client, user)

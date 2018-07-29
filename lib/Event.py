@@ -1,4 +1,5 @@
 import mods.CoreMod
+from lib import Access
 
 class Event:
 
@@ -83,9 +84,10 @@ class Event:
                 mod.namelist(client, args[3], [args[7],args[4], args[5]])
 
     # We are going to join any channel we are invited to
-    def invite(self, client, location):
-        # TODO - better secure from abuse
-        client.join(location)
+    def invite(self, client, user, location):
+        user = self.getUser(user)
+        if client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
+            client.join(location)
 
     def getUser(self, raw):
         try:

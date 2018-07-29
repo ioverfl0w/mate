@@ -109,7 +109,7 @@ class Engine:
                     elif args[1] == 'KICK':
                         self.event.kick(e, packet, args)
                     elif args[1] == 'INVITE':
-                        self.event.invite(e, args[3][1:])
+                        self.event.invite(e, args[0], args[3][1:])
                     elif args[1] == 'PONG':
                         # we've been replied to
                         e.pingAttempts = 0

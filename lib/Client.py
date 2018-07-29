@@ -69,6 +69,9 @@ class Client:
     def join(self, channel):
         self.send('JOIN ' + channel)
 
+    def part(self, channel):
+        self.send('PART ' + channel)
+
     def kick(self, channel, target, reason='Goodbye', ban=False):
         if ban:
             ## TODO:
