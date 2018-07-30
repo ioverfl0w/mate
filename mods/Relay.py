@@ -6,7 +6,7 @@ color_palette = ['06', '10', '04']
 join_msg_color = '03'
 part_msg_color = '05'
 kick_msg_color = '04'
-nick_msg_color = '08'
+nick_msg_color = '11'
 
 class Relay:
 
@@ -64,7 +64,7 @@ class Relay:
             args = message.lower().split(' ')
 
             if args[0] == '!cmd':
-                client.notice(user[0], 'Relay Commands: (public )!list -- (PM) \'list\''
+                client.notice(user[0], 'Relay Commands: (public) !list -- (PM) \'list\''
                     + (' -- (Admin public) !k[ick] !b[an]' if client.getRights(user[0]) > Access.LEVELS['USER'] else ''))
 
             elif args[0] == '!list':

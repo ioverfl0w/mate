@@ -38,6 +38,11 @@ class CoreMod:
         if args[0] == '!rights':
             return client.notice(user[0], 'Access level: ' + str(client.getRights(user[0])) + ' - Current rights: ' + str(client.activeRights(user[0])))
 
+
+        if args[0] == '!cmd':
+            client.notice(user[0], 'CoreMod Commands: .source/.bots !rights'
+                + (' !join !part !set' if client.getRights(user[0]) > Access.LEVELS['USER'] else ''))
+
         # Legacy Auth procedure
         if message == '.' and \
             client.getRights(user[0]) > Access.LEVELS['USER'] and \

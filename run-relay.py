@@ -1,5 +1,4 @@
 from lib import Engine
-from mods import Hilight
 from mods import Relay
 from mods import Stats
 
