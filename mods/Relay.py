@@ -68,7 +68,7 @@ class Relay:
                     + (' -- (Admin public) !k[ick] !b[an]' if client.getRights(user[0]) > Access.LEVELS['USER'] else ''))
 
             elif args[0] == '!list':
-                self.sendList(client, user)
+                self.sendList(client, user[0])
 
             # Trusted users
             elif (args[0] == '!k' or args[0] == '!kick') and client.activeRights(user[0]) >= Access.LEVELS['TRUSTED']:
@@ -84,7 +84,7 @@ class Relay:
                 else:
                     self.kickUser(client, user, args, ban=True)
 
-    # Public messages inside a Relayed channel are streamed
+        # Public messages inside a Relayed channel are streamed
         if (self.isRelayed(client, channel)):
             # Check for /me
             if message.startswith('\001ACTION'):
@@ -104,7 +104,7 @@ class Relay:
 
             # List users in linked channels
             if (message.lower() == 'list'):
-                return self.sendList(client, user)
+                return self.sendList(client, user[0])
 
             # Check if this message is a Private Message
             if (len(args) > 1):
@@ -137,7 +137,7 @@ class Relay:
             # Better check against this. Could be relaying channels on a single network
             if not n['client'] == client:
                 c = self.getColor(n['client'], n['location'])
-                client.notice(user[0], '\00303' + str(len(n['nicks'])) + ' User'
+                client.notice(user, '\00303' + str(len(n['nicks'])) + ' User'
                     + ('' if len(n['nicks']) == 1 else 's') + ' in \003' + c + n['location'] + '\003 '
                     + '(\003' + c + 'via ' + n['client'].profile.network.name + '\003): \003' + c
                     + (('\003, \003' + c).join(n['nicks'])))
@@ -148,6 +148,7 @@ class Relay:
         if (self.isRelayed(client, location)):
             self.addUserToChannel(client, location, user[0])
             self.relay(client, self.constructHeading(client, location, user[0], join_msg_color) + ' has joined ' + location)
+            self.sendList(client, user[0])
 
     def part(self, client, user, location):
         if (self.isRelayed(client, location)):

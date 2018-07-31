@@ -73,9 +73,9 @@ class Stats:
             usr = self.getStats(client, user[0])
             try:
                 return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
-                    '\0033Joins:\003 ' + str(usr[2]) + ' \0033Parts:\003 ' + \
-                    str(usr[3]) + ' \0033Messages:\003 ' + str(usr[4]) + \
-                    ' \0033Characters:\003 ' + str(usr[5]) + ' \0033Avg CPM:\003 ' + \
+                    '\0033Joins:\003 ' + str(usr[2]) + ' \0033| Parts:\003 ' + \
+                    str(usr[3]) + ' \0033| Messages:\003 ' + str(usr[4]) + \
+                    ' \0033| Characters:\003 ' + str(usr[5]) + ' \0033| Avg CPM:\003 ' + \
                     str(round(Decimal(usr[5]) / Decimal(usr[4]), 2)) )
             except:
                 # Users not registered (no stats recorded) will cause an error

@@ -23,7 +23,7 @@ class MarkSpeak:
     # TODO - record new words from active chat
     # TODO - make this less shit, its awful. and I hate looking at it
 
-    def __init__(self, clients):
+    def __init__(self, clients=None):
         self.module = Engine.Module('MarkSpeak', 'PRIVMSG', clients=clients)
         # our database
         self.database = sqlite3.connect('./data/mark-3.db')
