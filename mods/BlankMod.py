@@ -1,3 +1,5 @@
+from lib import Engine
+
 class BlankMod:
 
     # BlankMod
@@ -13,7 +15,7 @@ class BlankMod:
         # a single event type, or a list of event types. Both lines work, when
         # one is commented out. Event types are raw IRC event types
         #self.module = lib.Engine.Module('ModuleName', 'PRIVMSG')
-        self.module = lib.Engine.Module('ModuleName', ['PRIVMSG', 'JOIN', 'PART'])
+        self.module = Engine.Module('ModuleName', ['PRIVMSG', 'JOIN', 'PART'])
 
     # client - the client that is processing the event
     # user - [0] nick , [1] user , [3] host
