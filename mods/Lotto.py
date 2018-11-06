@@ -3,19 +3,134 @@ import datetime
 import json
 import requests
 import sqlite3
-
+import time
 import traceback
 
+# Rate that the Lotto will check for next drawings (in minutes)
+REFRESH_RATE = 30
 DIR = './data/'
 
+# Static variables for each lotto, may change over time
 LOTTO = {
     'powerball': {
         'win': 'https://www.powerball.com/api/v1/numbers/powerball/recent?_format=json',
-        'next': 'https://www.powerball.com/api/v1/estimates/powerball?_format=json'
+        'next': 'https://www.powerball.com/api/v1/estimates/powerball?_format=json',
+        'winners': [
+            {
+                'name': 'Powerball match',
+                'base_prize': 4,
+                'pb_match': True,
+                'num_match': 0
+            },
+            {
+                'name': 'Powerball+1 match',
+                'base_prize': 4,
+                'pb_match': True,
+                'num_match': 1
+            },
+            {
+                'name': 'Powerball+2 match',
+                'base_prize': 7,
+                'pb_match': True,
+                'num_match': 2
+            },
+            {
+                'name': '3 number match',
+                'base_prize': 7,
+                'pb_match': False,
+                'num_match': 3
+            },
+            {
+                'name': 'Powerball+3 match',
+                'base_prize': 100,
+                'pb_match': True,
+                'num_match': 3
+            },
+            {
+                'name': '4 number match',
+                'base_prize': 100,
+                'pb_match': False,
+                'num_match': 4
+            },
+            {
+                'name': 'Powerball+4 match',
+                'base_prize': 50000,
+                'pb_match': True,
+                'num_match': 4
+            },
+            {
+                'name': '5 number match',
+                'base_prize': 1000000,
+                'pb_match': False,
+                'num_match': 5
+            },
+            {
+                'name': 'Jackpot',
+                'base_prize': -1, #No value, variable
+                'pb_match': True,
+                'num_match': 5
+            }
+        ] # end winners
     },
     'megamillions': {
         'win': 'http://www.megamillions.com/Media/Static/winning-numbers/winning-numbers.json?rt=123456a',
-        'next': 'http://www.megamillions.com/Media/Static/winning-numbers/winning-numbers.json?rt=987654b'
+        'next': 'http://www.megamillions.com/Media/Static/winning-numbers/winning-numbers.json?rt=987654b',
+        'winners': [
+            {
+                'name': 'Megaball match',
+                'base_prize': 2,
+                'pb_match': True,
+                'num_match': 0
+            },
+            {
+                'name': 'Megaball+1 match',
+                'base_prize': 4,
+                'pb_match': True,
+                'num_match': 1
+            },
+            {
+                'name': 'Megaball+2 match',
+                'base_prize': 10,
+                'pb_match': True,
+                'num_match': 2
+            },
+            {
+                'name': '3 number match',
+                'base_prize': 10,
+                'pb_match': False,
+                'num_match': 3
+            },
+            {
+                'name': 'Megaball+3 match',
+                'base_prize': 200,
+                'pb_match': True,
+                'num_match': 3
+            },
+            {
+                'name': '4 number match',
+                'base_prize': 500,
+                'pb_match': False,
+                'num_match': 4
+            },
+            {
+                'name': 'Megaball+4 match',
+                'base_prize': 10000,
+                'pb_match': True,
+                'num_match': 4
+            },
+            {
+                'name': 'Match 5',
+                'base_prize': 1000000,
+                'pb_match': False,
+                'num_match': 5
+            },
+            {
+                'name': 'Jackpot',
+                'base_prize': -1, #No value, variable
+                'pb_match': True,
+                'num_match': 5
+            }
+        ] # end winners
     }
 }
 
@@ -31,22 +146,13 @@ class Lotto:
 
         # Connect to our database
         self.db = sqlite3.connect(DIR + 'lotto.db')
+        self.lastCheck = 0 #Last time the draw was checked
         self.databaseCheck()
-        self.checkNext()
+        self.draws = self.getDraws()
 
     # Will make sure the database has the necessary tables, as well as Check
     # for the next drawing.
     def databaseCheck(self):
-        # draws
-        # this table will contain all the pending drawing dates, and the winning numbers
-        # of previously tracked drawings
-        self.db.execute('''
-        create table if not exists 'draws' (
-            id integer primary key,
-            date text,
-            winnums text default NULL,
-            lotto text
-        );''')
         # usersettings
         # table containing options the user sets, such as publicly announcing when someone has won
         # or have their picks be searchable by other users
@@ -65,14 +171,30 @@ class Lotto:
             dateplaced text,
             nums text,
             nick text,
-            network text,
-            drawid integer
+            network text
         );''')
 
-    # Will check the next drawings with what is in the database. This will trigger an event that Will
-    # Check all pending picks
-    def checkNext(self):
-        pass
+    # Use this to fetch the next drawing dates. Will only pull from website based on REFRESH_RATE
+    # to prevent abuse of the lotto websites.
+    def getDraws(self):
+        self.update()
+        return self.draws
+
+    # Update all of our stored information and database
+    def update(self):
+        if time.time() > (REFRESH_RATE * 60) + self.lastCheck:
+            self.lastCheck = time.time()
+            print('check performed')
+            self.draws = {
+                'pb': {
+                    'next': self.get_powerball_nextdrawing(),
+                    'nums': self.get_powerball_numbers()
+                },
+                'mm': {
+                    'next': self.get_megamillion_nextdrawing(),
+                    'nums': self.get_megamillion_numbers()
+                }
+            }
 
     # client - the client that is processing the event
     # user - [0] nick , [1] user , [3] host
@@ -81,26 +203,19 @@ class Lotto:
     def message(self, client, user, channel, message):
         args = message.lower().split(' ')
         if args[0] == '!help':
-            return client.notice(user[0], '[Lotto Help] !lotto (pb|mm) - !pick (pb|mm) # # # # # #')
+            return client.notice(user[0], '[Lotto Help] !lotto (pb|mm) - !next (pb|mm) - !pick # # # # # #')
 
         if args[0] == '!lotto':
             if len(args) == 1: # Just display the winning numbers
                 self.sendResults(client, channel, user[0], 'mm') # MegaMillions
                 return self.sendResults(client, channel, user[0], 'pb') # Powerball
-            if args[1] == 'pb' or args[1] == 'powerball':
-                return sendResults(client, channel, user[0], 'pb')
-            elif args[1] == 'mm' or args[1] == 'megamillions':
-                    return sendResults(client, channel, user[0], 'mm')
+            return sendResults(client, channel, user[0], args[1])
 
         if args[0] == '!next':
             if len(args) == 1:
-                client.msg()
-                self.sendResults(client, channel, user[0], 'mm') # MegaMillions
-                return self.sendResults(client, channel, user[0], 'pb') # Powerball
-            if args[1] == 'pb' or args[1] == 'powerball':
-                return sendResults(client, channel, user[0], 'pb')
-            elif args[1] == 'mm' or args[1] == 'megamillions':
-                    return sendResults(client, channel, user[0], 'mm')
+                self.sendNext(client, channel, user[0], 'mm') # MegaMillions
+                return self.sendNext(client, channel, user[0], 'pb') # Powerball
+            return self.sendNext(client, channel, user[0], args[1])
 
         if args[0] == '!pick':
             # Show our picks
@@ -116,22 +231,12 @@ class Lotto:
 
             # Submit a pick
             try:
-                name = None
-                if args[1] == 'pb' or args[1]== 'powerball':
-                    name = 'pb'
-                elif args[1] == 'mm' or args[1]== 'megamillions':
-                    name = 'mm'
-                else:
-                    raise ValueError('[pick] unsupported lotto provided (' + args[1] + ')')
-
                 nums = []
-                for i in range(2,8): # picks should be 6 numbers
+                for i in range(1,7): # picks should be 6 numbers
                     nums.append(int(args[i]))
 
-                # TODO -- get the draw id
-                drawid = 0
-
-                self.submitPick(client, user[0], nums, drawid)
+                self.submitPick(client, user[0], nums)
+                return client.notice(user[0], 'Your ticket has been submitted. You can check it with !check')
 
             except Exception:
                 print(traceback.format_exc())
@@ -145,22 +250,27 @@ class Lotto:
         return cur.fetchall()
 
     def sendNext(self, client, dest, recip, lotto):
-        pass
+        try:
+            next = self.getDraws()[lotto]['next']
+            #print(next)
+            client.msg(dest, recip + ': Next ' + next['name'] + ' drawing is ' + next['drawdate'] + '. Jackpot: ' + ('$' if type(next['prize']) == int else '') + str(next['prize']))
+        except:
+            client.msg(dest, 'Invalid lotto name')
+            print(traceback.format_exc())
 
     def sendResults(self, client, dest, recip, lotto):
-        if lotto == 'mm':
-            r = self.get_megamillion_numbers()
-        elif lotto == 'pb':
-            r = self.get_powerball_numbers()
-        else:
-            return client.msg(dest, 'Invalid lotto type in sendResults()')
+        try:
+            r = self.getDraws()[lotto]['nums']
+            #print(next)
+            client.msg(dest, recip + ': ' + r['lotto'] + ' Results (' + r['date'] + ') ' + '-'.join(map(str, r['nums'])) + ' ' + r['pb_code'] + ': ' + str(r['pb']) + ' x' + str(r['multiplier']))
+        except:
+            client.msg(dest, 'Invalid lotto name')
+            print(traceback.format_exc())
 
-        client.msg(dest, recip + ': ' + r['lotto'] + ' Results (' + r['date'] + ') ' + '-'.join(map(str, r['nums'])) + ' ' + r['pb_code'] + ': ' + str(r['pb']) + ' x' + str(r['multiplier']))
-
-    def submitPick(self, client, nick, nums, drawid):
+    def submitPick(self, client, nick, nums):
         cur = self.db.cursor()
-        cur.execute('INSERT OR IGNORE INTO picks (dateplaced, nums, nick, network, drawid) ' + \
-            'VALUES (?,?,?,?,?)', [datetime.date.today(), json.dumps(nums), nick, client.profile.network.name, drawid])
+        cur.execute('INSERT OR IGNORE INTO picks (dateplaced, nums, nick, network) ' + \
+            'VALUES (?,?,?,?)', [datetime.date.today(), json.dumps(nums), nick, client.profile.network.name])
         self.db.commit()
         cur.close()
 
@@ -169,6 +279,7 @@ class Lotto:
         request = requests.get(LOTTO['megamillions']['next'])
         res = request.json()['nextDraw']
         return {
+                'name': 'MegaMillions',
                 'drawdate': res['NextDrawDate'][:res['NextDrawDate'].index('T')],
                 'prize': res['NextJackpotAnnuityAmount'],
                 'cash': res['NextJackpotCashAmount']
@@ -190,6 +301,7 @@ class Lotto:
         req = requests.get(LOTTO['powerball']['next'])
         res = req.json()[0]
         return {
+                'name': 'PowerBall',
                 'drawdate': res['field_next_draw_date'][:res['field_next_draw_date'].index('T')],
                 'prize': res['field_prize_amount'],
                 'cash': res['field_prize_amount_cash']
