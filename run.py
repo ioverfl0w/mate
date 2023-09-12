@@ -18,11 +18,11 @@ rizon = Engine.Network('Rizon', 'irc.rizon.net', 6697, True)
 
 # Client Profile
 # lib.Engine.Profile(nick, network, nickservPass)
-token = Engine.Profile('Hans', rizon, 'howlonghaveibeenhereosrs03') #
+token = Engine.Profile('token', rizon) #
 
 # Client autojoin channels
 # TODO allow all config to be saved within a database file created from a setup program
-token.ajoin = ['#osrs', '#nova', '#drudge', '#2003scape', '#runescape', '#trollhour', '#ghetty.space', '#asia', '#ethereal', '#steam', '#code', '#chat', '#games', '#linux']  #
+token.ajoin = ['#nova']  #
 
 # Client UMODES autoset
 # token.umodes = ''
