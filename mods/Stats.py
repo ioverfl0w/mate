@@ -63,13 +63,16 @@ class Stats:
         cur.close()
 
     def message(self, client, user, channel, message):
-        args = message.split(' ')
+        args = message.lower().split(' ')
 
         # Record some stats, cuz
         self.recordMsgStats(client, user[0], len(message))
 
+        if args[0] == '!help':
+            return client.msg(channel, user[0] + ': [Stats Help] !me - !seen <nick>')
+
         # show off your stats to the channel
-        if args[0].lower() == '!me':
+        if args[0] == '!me':
             usr = self.getStats(client, user[0])
             try:
                 return client.msg(channel, '\0032(Stats) \003' + user[0] + ' - ' + \
@@ -82,14 +85,14 @@ class Stats:
                 return client.msg(channel, '\0034Error\003 unable to recall stats for ' + user[0])
 
         # check the last time a specified user was seen doing something
-        if args[0].lower() == '!seen':
+        if args[0] == '!seen':
             # nicks are only 1 word, so here's a reminded of syntax
             if not len(args) == 2:
                 return client.notice(user[0], 'Syntax: !seen [nick]')
             if args[1].lower() == user[0].lower():
                 return client.msg(channel, 'Looking for yourself, ' + user[0] + '?')
             usr = self.getStats(client, args[1])
-            if usr == None: #no user to report
+            if usr is None:  # no user to report
                 return client.msg(channel, user[0] + ', I don\'t know who ' + args[1] + ' is.')
             else:
                 return client.msg(channel, user[0] + ', ' + args[1] + ' was last seen ' + Engine.timedString((time.time() - usr[6])) + ' ago.')

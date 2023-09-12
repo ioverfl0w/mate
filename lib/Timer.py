@@ -1,13 +1,11 @@
 import timer.AccessClock
 import timer.Pinger
 import time
-
 class TimeKeeper:
 
     # TimeKeeper
     #
     # Manage all time-related functions and ensure they are called upon
-
     def __init__(self, engine):
         # storage for timed functions
         self.collection = []
@@ -27,7 +25,8 @@ class TimeKeeper:
 
     # Load our timed-function into the TimeKeeper
     def loadTimeFunc(self, func):
-        #self.engine.log.write('(Timer) Loading timed-function ' + func.schedule.name + ' (' + ('active' if func.schedule.active else 'dormant') + ')')
+        if self.engine.debug:
+            self.engine.log.write('(Timer) Loading timed-function ' + func.schedule.name + ' (' + ('active' if func.schedule.active else 'dormant') + ')')
         self.collection.append(func)
 
     # Fetch a timed-function based off its name
@@ -36,6 +35,12 @@ class TimeKeeper:
             if func.schedule.name == name:
                 return func
         return None
+
+    def getTimerNames(self):
+        res = []
+        for c in self.collection:
+            res.append(c.schedule.name + '(' + ('active' if c.schedule.active else 'dormant') + ')')
+        return ', '.join(res)
 
 class Schedule:
 

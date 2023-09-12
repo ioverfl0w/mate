@@ -5,6 +5,7 @@ from lib import Logger
 import time
 from lib import Timer
 
+
 class Engine:
 
     # Engine
@@ -27,7 +28,7 @@ class Engine:
         self.access = Access.Access(self)
 
     def addClient(self, profile):
-        #add a new client to our queue
+        # add a new client to our queue
         self.clients.append(Client.Client(self, profile))
 
     def addClients(self, profiles):
@@ -53,11 +54,9 @@ class Engine:
         return None
 
     def dead(self, client):
-        # a client has reported a dead connection,
-        # we need to fix this be reconnecting
-        self.log.write('! client reported dead ! ' + str(client))
+        # a client has reported a dead connection, we need to fix this be reconnecting
         client.status = Client.Status.OFFLINE
-        pass
+        self.log.write('! client reported dead ! ' + str(client))
 
     def cycle(self):
         halted = 0
@@ -69,22 +68,26 @@ class Engine:
 
             # A client that is offline
             if e.status == Client.Status.OFFLINE:
-                self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' +\
-                            e.profile.network.address + ':' + ('+' if e.profile.network.ssl else '') + str(e.profile.network.port) + ' ...')
-                e.connect() #build the socket layers
-                e.identify() # communicate with the server and log in
+                self.log.write('(Engine) Connecting ' + e.profile.nick + ' to ' + \
+                               e.profile.network.address + ':' + ('+' if e.profile.network.ssl else '') + str(
+                    e.profile.network.port) + ' ...')
+                e.connect()  # build the socket layers
+                e.identify()  # communicate with the server and log in
                 time.sleep(1)
                 continue
 
             # we are expecting something
             incoming = str(e.read())
             if incoming == '':
-                continue # screw off, blank lines
+                continue  # screw off, blank lines
 
             # split different messages read at a single time
             queue = incoming.split('\n')
             for packet in queue:
                 args = packet.split(' ')
+
+                if self.debug:
+                    self.log.write('(packet) ' + packet)
 
                 # check for pong, dont waste time
                 if args[0] == 'PING':
@@ -122,35 +125,33 @@ class Engine:
                     # (Relay Hook) Checks for NAMELIST responses
                     elif args[1] == '352':
                         self.event.namelist(e, packet, args)
-                    # (CoreMod Hook) Returning an identified user response from WHOIS
-                    elif args[1] == '307' or args[1] == '330':# Rizon uses 307, MITB uses 330
-                        self.access.auth(e, args[3])
-
-                    if self.debug:
-                        self.log.write('(packet) ' + packet)
+                    # Returning an identified user response from WHOIS
+                    elif args[1] == '307' or args[1] == '330':  # Rizon uses 307, MITB uses 330
+                        self.event.identify(e, args[3])  # allow modules to use this information to verify identities
 
                 # A client still CONNECTING
                 if e.status == Client.Status.CONNECTING:
-                    if args[1] == '433': # nick in use
-                        e.quit() # close this connection
-                        self.log.write('(Engine) !! CLIENT HALTED !! nick in use -> '+ str(e))
+                    if args[1] == '433':  # nick in use
+                        e.quit()  # close this connection
+                        self.log.write('(Engine) !! CLIENT HALTED !! nick in use -> ' + str(e))
                         e.status = Client.Status.HALTED
                         continue
-                    if args[1] == '376' or args[1] == '254': # assume we are connected now
+                    if args[1] == '376' or args[1] == '254':  # assume we are connected now
                         # identify with nickserv
                         if not e.profile.nickserv == None:
                             e.msg('NickServ', 'identify ' + e.profile.nickserv)
                         # set our UMODES
                         if not e.profile.umodes == None:
                             e.send('MODE ' + e.profile.nick + ' ' + e.profile.umodes)
-                        time.sleep(0.25) # give NickServ time to identify us
+                        time.sleep(0.25)  # give NickServ time to identify us
                         # check autojoin
                         if not e.profile.ajoin == None:
                             for chan in e.profile.ajoin:
                                 e.join(chan)
                         # change our status
                         e.status = Client.Status.ONLINE
-                        self.log.write('(Engine) Client ' + e.profile.nick + ' on ' + e.profile.network.name + ' connected.')
+                        self.log.write(
+                            '(Engine) Client ' + e.profile.nick + ' on ' + e.profile.network.name + ' connected.')
                     continue
 
         # If all of our clients are halted, shutdown program
@@ -177,39 +178,43 @@ class Engine:
             # check Timed-Functions
             self.timer.cycle()
 
-            # prevent cpu lockup
-            time.sleep(0.01)
+            # prevent cpu lockup0
+            time.sleep(0.025)
+
 
 class Module:
     # Module profile
     # Module name, [types], active
     def __init__(self, name, types, clients=None, active=True):
-        self.name = name #the module name
-        self.types = types if type(types) is list else [types] #either a single Type string to array of strings
-        self.clients = clients if type(clients) is list or clients == None else [clients] # Specify which client(s) use this module
-        self.active = active #module status (active or dormant)
+        self.name = name  # the module name
+        self.types = types if type(types) is list else [types]  # either a single Type string to array of strings
+        self.clients = clients if type(clients) is list or clients == None else [clients]  # Specify which client(s) use this module
+        self.active = active  # module status (active or dormant)
+
 
 class Profile:
     # Client profile
     # Nick name, Network (see below), NickServ Password (optional)
     def __init__(self, nick, network, nspw=None):
-        self.nick = nick #current nick on network
-        self.set_nick = nick #nick we want to be
-        self.network = network #network associated with the profile
-        self.nickserv = nspw #our nickserv ident password
-        self.umodes = None #the umodes set upon connect
-        self.ajoin = None #autojoin channels
+        self.nick = nick  # current nick on network
+        self.set_nick = nick  # nick we want to be
+        self.network = network  # network associated with the profile
+        self.nickserv = nspw  # our nickserv ident password
+        self.umodes = None  # the umodes set upon connect
+        self.ajoin = None  # autojoin channels
+
 
 class Network:
 
     # Network profile
     # Address (IP), port, ssl enabled, server password
     def __init__(self, name, address, port=6667, ssl=False, password=None):
-        self.name = name #network name (case sensitive)
-        self.address = address #network address
-        self.port = port #network port
-        self.ssl = ssl #use SSL protocols
-        self.password = password #server password
+        self.name = name  # network name (case sensitive)
+        self.address = address  # network address
+        self.port = port  # network port
+        self.ssl = ssl  # use SSL protocols
+        self.password = password  # server password
+
 
 def timedString(seconds):
     m = int(seconds / 60)
@@ -218,4 +223,5 @@ def timedString(seconds):
     m = int(m if h == 0 else m - (h * 60))
     d = int(0 if h < 24 else h / 24)
     h = int(h if d == 0 else h - (d * 24))
-    return ('' if d == 0 else str(d) + 'd') + ('' if h == 0 else str(h) + 'h') + ('' if m == 0 else str(m) + 'm') + str(s) + 's';
+    return ('' if d == 0 else str(d) + 'd') + ('' if h == 0 else str(h) + 'h') + ('' if m == 0 else str(m) + 'm') + str(
+        s) + 's';

@@ -2,6 +2,8 @@ from enum import Enum
 import ssl
 import socket
 import traceback
+import time
+
 
 class Client:
 
@@ -27,9 +29,11 @@ class Client:
     def activeRights(self, nick):
         return self.engine.access.getCurrentRights(self, nick)
 
-    def quit(self):
+    def quit(self, msg='Goodbye .. '):
         try:
-            self.send('QUIT')
+            self.send('QUIT :' + msg)
+            time.sleep(.5)
+            self.sock.close()
         except Exception:
             pass
         # we have closed our own connection
@@ -43,6 +47,7 @@ class Client:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(10)
         self.sock.connect((self.profile.network.address, self.profile.network.port))
+        self.pingAttempts = 0
         # wrap our socket for ssl
         if self.profile.network.ssl:
             self.sock = ssl.wrap_socket(self.sock)
@@ -53,15 +58,16 @@ class Client:
         self.status = Status.CONNECTING
 
         # send our server password
-        if not self.profile.network.password == None:
+        if self.profile.network.password is not None:
             self.send('PASS ' + self.profile.network.password)
+            time.sleep(1)
 
         # establish who we are with server
         self.send('NICK ' + self.profile.nick)
-        self.send('USER ' + self.profile.nick[0] + ' * * :m8')
+        self.send('USER ' + self.profile.nick + ' * * :m8')
 
     def msg(self, target, content):
-        self.send('PRIVMSG' + ' '+ target + ' :' + content)
+        self.send('PRIVMSG ' + target + ' :' + content)
 
     def notice(self, target, content):
         self.send('NOTICE ' + target + ' :' + content)
@@ -72,19 +78,26 @@ class Client:
     def part(self, channel):
         self.send('PART ' + channel)
 
+    def mode(self, channel, modes):
+        self.send('MODE ' + channel + ' ' + modes)
+
+    def whois(self, nick):
+        self.send('WHOIS :' + nick)
+
     def kick(self, channel, target, reason='Goodbye', ban=False):
         if ban:
-            ## TODO:
+            # TODO:
             # ban better with host names
-            self.send('MODE ' + channel + ' +b ' + target + '!*@*')
+            self.mode(channel, '+b ' + target + '!*@*')
         self.send('KICK ' + channel + ' ' + target + ' :' + reason)
 
     def send(self, content):
         try:
             self.sock.send(bytes(content + '\r\n', 'utf-8'))
-            #self.engine.log.write('>>> ' + content) # debug (NOTICE - can display sensitive info in Log!)
+            if self.engine.debug:
+                self.engine.log.write('>>> ' + content)  # debug (NOTICE - can display sensitive info in Log!)
         except Exception:
-            if self.sock == None:
+            if self.sock is None:
                 self.engine.log.write('Attempted to send message to disconnected socket')
                 return
             self.engine.log.write('error writing')
@@ -99,9 +112,10 @@ class Client:
 
     def __str__(self):
         return '[Nick:' + self.profile.nick + ',Network:' + self.profile.network.name + \
-                ', Addr:' + self.profile.network.address + ',Port:' + \
-                str(self.profile.network.port) + ',SSL:' + str(self.profile.network.ssl) + \
-                ',' + str(self.status) + ']';
+            ', Addr:' + self.profile.network.address + ',Port:' + \
+            str(self.profile.network.port) + ',SSL:' + str(self.profile.network.ssl) + \
+            ',' + str(self.status) + ']';
+
 
 class Status(Enum):
     OFFLINE = 0,
